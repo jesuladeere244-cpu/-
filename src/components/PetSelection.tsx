@@ -1,0 +1,127 @@
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Sparkles, Dice5, ChevronRight, Heart, Star, Gift, Box, Flame, Cat, Cpu } from 'lucide-react';
+import { PetSpecies } from '@/src/types';
+import { cn } from '@/src/lib/utils';
+import confetti from 'canvas-confetti';
+
+interface PetSelectionProps {
+  onSelect: (name: string, species: PetSpecies) => void;
+}
+
+export const PetSelection: React.FC<PetSelectionProps> = ({ onSelect }) => {
+  const [name, setName] = useState('');
+  const [selectedSpecies, setSelectedSpecies] = useState<PetSpecies | null>(null);
+  const [isRolling, setIsRolling] = useState(false);
+
+  const speciesOptions: { id: PetSpecies; name: string; description: string; color: string; icon: string; border: string }[] = [
+    { id: 'slime', name: '史莱姆', description: '软绵绵的，最喜欢抱抱', color: 'bg-[#B2EBF2]', border: 'border-[#00ACC1]', icon: '💧' },
+    { id: 'dragon', name: '小火龙', description: '调皮捣蛋，梦想是飞翔', color: 'bg-[#FFCDD2]', border: 'border-[#E53935]', icon: '🔥' },
+    { id: 'cat', name: '好奇猫', description: '聪明伶俐，学习的好帮手', color: 'bg-[#FFE0B2]', border: 'border-[#FB8C00]', icon: '🐱' },
+    { id: 'robot', name: '小机器人', description: '逻辑满分，科技感十足', color: 'bg-[#D1C4E9]', border: 'border-[#5E35B1]', icon: '🤖' },
+  ];
+
+  const handleRoll = () => {
+    setIsRolling(true);
+    let count = 0;
+    const interval = setInterval(() => {
+      setSelectedSpecies(speciesOptions[Math.floor(Math.random() * speciesOptions.length)].id);
+      count++;
+      if (count > 15) {
+        clearInterval(interval);
+        setIsRolling(false);
+        confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+      }
+    }, 100);
+  };
+
+  const handleStart = () => {
+    if (name.trim() && selectedSpecies) {
+      onSelect(name.trim(), selectedSpecies);
+    }
+  };
+
+  return (
+    <div className="w-full max-w-4xl mx-auto bg-white/90 backdrop-blur-xl rounded-[4rem] p-12 shadow-[24px_24px_0px_rgba(93,64,55,0.1)] border-4 border-[#5D4037] relative overflow-hidden">
+      {/* Decorative Background */}
+      <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-[#FFF3E0] to-transparent opacity-50" />
+      
+      <div className="text-center mb-12 relative z-10">
+        <div className="inline-flex p-4 bg-[#FFAB91] rounded-[2rem] mb-6 border-4 border-[#5D4037] rotate-[-2deg] shadow-lg">
+          <Gift className="w-10 h-10 text-white" />
+        </div>
+        <h2 className="text-5xl font-black text-[#5D4037] mb-4 font-hand">领养你的学习伙伴</h2>
+        <p className="text-[#8D6E63] font-bold text-xl">给它起个好听的名字，开启成长之旅吧！</p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 relative z-10">
+        {/* Left Side: Name & Blind Box */}
+        <div className="space-y-10">
+          <div className="space-y-4">
+            <label className="block text-xl font-black text-[#5D4037] ml-4 font-hand">宠物名字</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="例如：小太阳、皮皮..."
+              className="w-full px-8 py-5 rounded-[2.5rem] bg-white border-4 border-[#D7CCC8] focus:border-[#FFAB91] outline-none transition-all text-2xl font-black text-[#5D4037] placeholder:text-[#D7CCC8] shadow-inner"
+            />
+          </div>
+
+          <div className="p-8 bg-[#FFF9F2] rounded-[3rem] border-4 border-dashed border-[#FFAB91] text-center">
+            <h3 className="text-2xl font-black text-[#5D4037] mb-6 font-hand">试试运气？</h3>
+            <button
+              onClick={handleRoll}
+              disabled={isRolling}
+              className="group relative inline-flex items-center justify-center px-10 py-5 bg-[#FFD54F] text-[#5D4037] rounded-[2rem] text-2xl font-black shadow-[8px_8px_0px_#FBC02D] border-4 border-[#5D4037] hover:translate-y-[-4px] active:translate-y-[2px] active:shadow-none transition-all disabled:opacity-50"
+            >
+              <Box className={cn("w-8 h-8 mr-3", isRolling && "animate-bounce")} />
+              抽取盲盒
+            </button>
+            <p className="mt-4 text-sm font-bold text-[#A1887F]">随机获得一个神秘的小伙伴！</p>
+          </div>
+        </div>
+
+        {/* Right Side: Species Selection */}
+        <div className="space-y-6">
+          <label className="block text-xl font-black text-[#5D4037] ml-4 font-hand">选择种类</label>
+          <div className="grid grid-cols-2 gap-4">
+            {speciesOptions.map((option) => (
+              <button
+                key={option.id}
+                onClick={() => setSelectedSpecies(option.id)}
+                className={cn(
+                  "p-6 rounded-[2.5rem] border-4 transition-all text-left relative group overflow-hidden",
+                  option.color,
+                  option.border,
+                  selectedSpecies === option.id 
+                    ? "shadow-[8px_8px_0px_#5D4037] translate-y-[-4px]" 
+                    : "opacity-60 grayscale-[0.5] hover:opacity-100 hover:grayscale-0"
+                )}
+              >
+                <div className="text-4xl mb-3">{option.icon}</div>
+                <h4 className="text-xl font-black text-[#5D4037] mb-1 font-hand">{option.name}</h4>
+                <p className="text-[10px] font-bold text-[#5D4037]/70 leading-tight">{option.description}</p>
+                {selectedSpecies === option.id && (
+                  <div className="absolute top-3 right-3">
+                    <Sparkles className="w-5 h-5 text-[#5D4037] animate-pulse" />
+                  </div>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-16 text-center relative z-10">
+        <button
+          onClick={handleStart}
+          disabled={!name.trim() || !selectedSpecies || isRolling}
+          className="px-16 py-6 bg-[#FF7043] text-white rounded-[3rem] text-3xl font-black shadow-[12px_12px_0px_#D84315] border-4 border-[#5D4037] hover:translate-y-[-4px] active:translate-y-[4px] active:shadow-none transition-all disabled:opacity-30 disabled:grayscale disabled:shadow-none font-hand"
+        >
+          开启成长之旅！✨
+        </button>
+      </div>
+    </div>
+  );
+};

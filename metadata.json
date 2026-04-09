@@ -1,0 +1,5 @@
+{
+  "name": "SmartyPet (学习力宠物)",
+  "description": "一个将学习任务与虚拟宠物养成相结合的趣味应用，通过完成学习打卡来喂养和进化你的电子宠物。",
+  "requestFramePermissions": []
+}

@@ -1,0 +1,24 @@
+@import url('https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Quicksand:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Quicksand", "ZCOOL KuaiLe", system-ui, sans-serif;
+  --font-hand: "ZCOOL KuaiLe", cursive;
+}
+
+@layer base {
+  body {
+    @apply bg-[#FFF9F2] text-[#5D4037] selection:bg-[#FFD180];
+  }
+}
+
+@layer components {
+  .hand-drawn-border {
+    border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+    border: 3px solid #5D4037;
+  }
+  
+  .soft-shadow {
+    box-shadow: 8px 8px 0px rgba(93, 64, 55, 0.1);
+  }
+}
