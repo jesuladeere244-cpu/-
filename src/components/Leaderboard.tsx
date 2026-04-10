@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { Trophy, Medal, Star, User } from 'lucide-react';
+import { Trophy, Medal, Star, User, Coins, Zap } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
 
 interface LeaderboardEntry {
@@ -9,6 +9,7 @@ interface LeaderboardEntry {
   petName: string;
   level: number;
   xp: number;
+  points: number;
   isCurrentUser?: boolean;
 }
 
@@ -17,16 +18,49 @@ interface LeaderboardProps {
 }
 
 export const Leaderboard: React.FC<LeaderboardProps> = ({ entries }) => {
-  const sortedEntries = [...entries].sort((a, b) => b.level !== a.level ? b.level - a.level : b.xp - a.xp);
+  const [rankType, setRankType] = useState<'level' | 'points'>('level');
+
+  const sortedEntries = [...entries].sort((a, b) => {
+    if (rankType === 'level') {
+      return b.level !== a.level ? b.level - a.level : b.xp - a.xp;
+    }
+    return b.points - a.points;
+  });
 
   return (
     <div className="w-full max-w-2xl bg-white/60 p-8 rounded-[3rem] border-4 border-[#D7CCC8] shadow-[16px_16px_0px_rgba(93,64,55,0.05)]">
-      <div className="text-center mb-10">
+      <div className="text-center mb-8">
         <div className="inline-flex p-4 bg-[#FFF3E0] rounded-[2rem] mb-4 border-4 border-[#FFE0B2] rotate-[2deg]">
           <Trophy className="w-10 h-10 text-[#FFB300]" />
         </div>
-        <h2 className="text-3xl font-black text-[#5D4037] font-hand">学习力光荣榜</h2>
-        <p className="text-[#8D6E63] font-bold">看看谁的小伙伴成长得最快！</p>
+        <h2 className="text-3xl font-black text-[#5D4037] font-hand">光荣榜</h2>
+        <p className="text-[#8D6E63] font-bold">看看谁的小伙伴最厉害！</p>
+      </div>
+
+      {/* Ranking Type Toggle */}
+      <div className="flex justify-center mb-8">
+        <div className="bg-[#EFEBE9] p-2 rounded-[2rem] border-4 border-[#D7CCC8] flex gap-2">
+          <button
+            onClick={() => setRankType('level')}
+            className={cn(
+              "flex items-center gap-2 px-6 py-2 rounded-[1.5rem] text-sm font-black transition-all",
+              rankType === 'level' ? "bg-[#FFCC80] text-[#5D4037] shadow-sm border-2 border-[#5D4037]" : "text-[#A1887F] hover:text-[#5D4037]"
+            )}
+          >
+            <Zap className="w-4 h-4" />
+            等级排行
+          </button>
+          <button
+            onClick={() => setRankType('points')}
+            className={cn(
+              "flex items-center gap-2 px-6 py-2 rounded-[1.5rem] text-sm font-black transition-all",
+              rankType === 'points' ? "bg-[#FFD54F] text-[#5D4037] shadow-sm border-2 border-[#5D4037]" : "text-[#A1887F] hover:text-[#5D4037]"
+            )}
+          >
+            <Coins className="w-4 h-4" />
+            积分排行
+          </button>
+        </div>
       </div>
 
       <div className="space-y-4">
@@ -70,12 +104,26 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ entries }) => {
               </div>
 
               <div className="text-right">
-                <div className="text-2xl font-black text-[#5D4037] leading-none">
-                  Lv.{entry.level}
-                </div>
-                <div className="text-[10px] font-black text-[#A1887F] uppercase tracking-widest mt-1">
-                  {entry.xp} XP
-                </div>
+                {rankType === 'level' ? (
+                  <>
+                    <div className="text-2xl font-black text-[#5D4037] leading-none">
+                      Lv.{entry.level}
+                    </div>
+                    <div className="text-[10px] font-black text-[#A1887F] uppercase tracking-widest mt-1">
+                      {entry.xp} XP
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-2xl font-black text-[#FF7043] leading-none flex items-center justify-end gap-1">
+                      <Coins className="w-5 h-5" />
+                      {entry.points}
+                    </div>
+                    <div className="text-[10px] font-black text-[#A1887F] uppercase tracking-widest mt-1">
+                      学习币
+                    </div>
+                  </>
+                )}
               </div>
             </motion.div>
           );

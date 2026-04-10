@@ -6,7 +6,7 @@ export interface Task {
   createdAt: number;
 }
 
-export type PetSpecies = 'slime' | 'dragon' | 'cat' | 'robot';
+export type PetSpecies = 'slime' | 'dragon' | 'cat' | 'robot' | 'rabbit' | 'panda' | 'frog' | 'pig' | 'tiger' | 'elephant' | 'dinosaur' | 'fox' | 'penguin' | 'lion';
 
 export interface PetState {
   name: string;

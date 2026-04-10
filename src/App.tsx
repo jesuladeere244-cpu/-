@@ -34,9 +34,9 @@ const INITIAL_STATE: AppState = {
 };
 
 const MOCK_LEADERBOARD = [
-  { id: 'm1', name: '玲玲', petName: '雪球', level: 15, xp: 1800 },
-  { id: 'm2', name: '阿强', petName: '铁甲', level: 12, xp: 1200 },
-  { id: 'm3', name: '小红', petName: '喵喵', level: 10, xp: 950 },
+  { id: 'm1', name: '玲玲', petName: '雪球', level: 15, xp: 1800, points: 450 },
+  { id: 'm2', name: '阿强', petName: '铁甲', level: 12, xp: 1200, points: 320 },
+  { id: 'm3', name: '小红', petName: '喵喵', level: 10, xp: 950, points: 280 },
 ];
 
 export default function App() {
@@ -463,6 +463,7 @@ export default function App() {
       petName: p.pet.name,
       level: p.pet.level,
       xp: p.pet.xp,
+      points: p.pet.points,
       isCurrentUser: id === state.activeProfileId
     }))
   ];

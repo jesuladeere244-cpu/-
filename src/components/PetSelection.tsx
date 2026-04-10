@@ -19,6 +19,16 @@ export const PetSelection: React.FC<PetSelectionProps> = ({ onSelect }) => {
     { id: 'dragon', name: '小火龙', description: '调皮捣蛋，梦想是飞翔', color: 'bg-[#FFCDD2]', border: 'border-[#E53935]', icon: '🔥' },
     { id: 'cat', name: '好奇猫', description: '聪明伶俐，学习的好帮手', color: 'bg-[#FFE0B2]', border: 'border-[#FB8C00]', icon: '🐱' },
     { id: 'robot', name: '小机器人', description: '逻辑满分，科技感十足', color: 'bg-[#D1C4E9]', border: 'border-[#5E35B1]', icon: '🤖' },
+    { id: 'rabbit', name: '长耳兔', description: '蹦蹦跳跳，活力四射', color: 'bg-[#F8BBD0]', border: 'border-[#C2185B]', icon: '🐰' },
+    { id: 'panda', name: '圆圆熊猫', description: '憨态可掬，最爱吃竹子', color: 'bg-[#F5F5F5]', border: 'border-[#424242]', icon: '🐼' },
+    { id: 'frog', name: '跳跳蛙', description: '歌声嘹亮，夏天的精灵', color: 'bg-[#C8E6C9]', border: 'border-[#388E3C]', icon: '🐸' },
+    { id: 'pig', name: '粉粉猪', description: '爱睡懒觉，福气满满', color: 'bg-[#FCE4EC]', border: 'border-[#F06292]', icon: '🐷' },
+    { id: 'tiger', name: '小老虎', description: '威风凛凛，勇敢的小战士', color: 'bg-[#FFE0B2]', border: 'border-[#F57C00]', icon: '🐯' },
+    { id: 'elephant', name: '憨憨象', description: '温柔稳重，记忆力超群', color: 'bg-[#E1F5FE]', border: 'border-[#0288D1]', icon: '🐘' },
+    { id: 'dinosaur', name: '小恐龙', description: '远古来客，好奇心爆棚', color: 'bg-[#E8F5E9]', border: 'border-[#2E7D32]', icon: '🦖' },
+    { id: 'fox', name: '灵狐', description: '机智过人，优雅的化身', color: 'bg-[#FFF3E0]', border: 'border-[#E65100]', icon: '🦊' },
+    { id: 'penguin', name: '企鹅仔', description: '摇摇晃晃，极地小绅士', color: 'bg-[#ECEFF1]', border: 'border-[#263238]', icon: '🐧' },
+    { id: 'lion', name: '小狮子', description: '森林之王，自信满满', color: 'bg-[#FFF9C4]', border: 'border-[#FBC02D]', icon: '🦁' },
   ];
 
   const handleRoll = () => {

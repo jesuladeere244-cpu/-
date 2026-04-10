@@ -17,6 +17,13 @@ interface ProfileSelectorProps {
   onCreate: () => void;
 }
 
+const SPECIES_EMOJIS: Record<string, string> = {
+  slime: '💧', dragon: '🔥', cat: '🐱', robot: '🤖',
+  rabbit: '🐰', panda: '🐼', frog: '🐸', pig: '🐷',
+  tiger: '🐯', elephant: '🐘', dinosaur: '🦖', fox: '🦊',
+  penguin: '🐧', lion: '🦁'
+};
+
 export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ profiles, onSelect, onCreate }) => {
   return (
     <div className="w-full max-w-2xl mx-auto bg-white/90 backdrop-blur-xl rounded-[4rem] p-12 shadow-[20px_20px_0px_rgba(93,64,55,0.1)] border-4 border-[#5D4037] relative overflow-hidden">
@@ -41,8 +48,8 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ profiles, onSe
             onClick={() => onSelect(profile.id)}
             className="flex flex-col items-center gap-4 p-8 bg-[#FFF9F2] hover:bg-white border-4 border-[#D7CCC8] hover:border-[#FFAB91] rounded-[3rem] transition-all group text-center shadow-[8px_8px_0px_#D7CCC8] hover:shadow-[8px_8px_0px_#FFAB91]"
           >
-            <div className="w-24 h-24 bg-white rounded-[2.5rem] flex items-center justify-center text-[#FF7043] border-4 border-[#EFEBE9] group-hover:border-[#FFAB91] transition-colors shadow-inner">
-              <UserCircle className="w-16 h-16" />
+            <div className="w-24 h-24 bg-white rounded-[2.5rem] flex items-center justify-center text-[#FF7043] border-4 border-[#EFEBE9] group-hover:border-[#FFAB91] transition-colors shadow-inner text-5xl">
+              {SPECIES_EMOJIS[profile.petSpecies] || <UserCircle className="w-16 h-16" />}
             </div>
             <div>
               <h3 className="text-2xl font-black text-[#5D4037] mb-1 font-hand">{profile.name}</h3>

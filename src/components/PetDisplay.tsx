@@ -59,6 +59,56 @@ export const PetDisplay: React.FC<PetDisplayProps> = ({
       radius: 'rounded-3xl',
       border: 'border-slate-200'
     },
+    rabbit: { 
+      color: 'bg-gradient-to-b from-pink-100 to-pink-300', 
+      radius: 'rounded-[50%_50%_45%_45%/60%_60%_40%_40%]',
+      border: 'border-pink-50'
+    },
+    panda: { 
+      color: 'bg-gradient-to-b from-slate-50 to-slate-200', 
+      radius: 'rounded-[48%_48%_45%_45%/55%_55%_45%_45%]',
+      border: 'border-slate-300'
+    },
+    frog: { 
+      color: 'bg-gradient-to-b from-green-300 to-green-500', 
+      radius: 'rounded-[55%_55%_45%_45%/50%_50%_50%_50%]',
+      border: 'border-green-200'
+    },
+    pig: { 
+      color: 'bg-gradient-to-b from-pink-200 to-pink-400', 
+      radius: 'rounded-[50%_50%_48%_48%/55%_55%_45%_45%]',
+      border: 'border-pink-100'
+    },
+    tiger: { 
+      color: 'bg-gradient-to-b from-orange-300 to-orange-500', 
+      radius: 'rounded-[48%_48%_45%_45%/55%_55%_45%_45%]',
+      border: 'border-orange-200'
+    },
+    elephant: { 
+      color: 'bg-gradient-to-b from-blue-100 to-blue-300', 
+      radius: 'rounded-[50%_50%_45%_45%/55%_55%_45%_45%]',
+      border: 'border-blue-50'
+    },
+    dinosaur: { 
+      color: 'bg-gradient-to-b from-emerald-300 to-emerald-500', 
+      radius: 'rounded-[45%_45%_50%_50%/50%_50%_50%_50%]',
+      border: 'border-emerald-200'
+    },
+    fox: { 
+      color: 'bg-gradient-to-b from-orange-400 to-orange-600', 
+      radius: 'rounded-[48%_48%_45%_45%/55%_55%_45%_45%]',
+      border: 'border-orange-300'
+    },
+    penguin: { 
+      color: 'bg-gradient-to-b from-slate-700 to-slate-900', 
+      radius: 'rounded-[50%_50%_45%_45%/65%_65%_35%_35%]',
+      border: 'border-slate-600'
+    },
+    lion: { 
+      color: 'bg-gradient-to-b from-yellow-500 to-yellow-700', 
+      radius: 'rounded-[48%_48%_45%_45%/55%_55%_45%_45%]',
+      border: 'border-yellow-400'
+    },
   };
 
   const current = config[stage];
@@ -245,6 +295,65 @@ export const PetDisplay: React.FC<PetDisplayProps> = ({
             <div className="absolute -left-3 top-1/2 w-4 h-4 bg-slate-500 rounded-sm" />
             <div className="absolute -right-3 top-1/2 w-4 h-4 bg-slate-500 rounded-sm" />
           </>
+        )}
+        {species === 'rabbit' && (
+          <>
+            <div className="absolute -top-12 left-4 w-6 h-16 bg-pink-200 rounded-full border-2 border-pink-50" />
+            <div className="absolute -top-12 right-4 w-6 h-16 bg-pink-200 rounded-full border-2 border-pink-50" />
+          </>
+        )}
+        {species === 'panda' && (
+          <>
+            <div className="absolute -top-4 -left-2 w-10 h-10 bg-slate-800 rounded-full" />
+            <div className="absolute -top-4 -right-2 w-10 h-10 bg-slate-800 rounded-full" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full">
+              <div className="absolute top-[40%] left-[20%] w-10 h-12 bg-slate-800 rounded-full rotate-[15deg] opacity-20" />
+              <div className="absolute top-[40%] right-[20%] w-10 h-12 bg-slate-800 rounded-full rotate-[-15deg] opacity-20" />
+            </div>
+          </>
+        )}
+        {species === 'pig' && (
+          <div className="absolute top-[60%] left-1/2 -translate-x-1/2 w-12 h-8 bg-pink-300 rounded-full border-2 border-pink-100 flex items-center justify-center gap-2">
+            <div className="w-2 h-3 bg-pink-500/30 rounded-full" />
+            <div className="w-2 h-3 bg-pink-500/30 rounded-full" />
+          </div>
+        )}
+        {species === 'tiger' && (
+          <div className="absolute inset-0 overflow-hidden rounded-[inherit]">
+            <div className="absolute top-4 left-0 w-8 h-2 bg-slate-900/20 rounded-r-full" />
+            <div className="absolute top-12 left-0 w-10 h-2 bg-slate-900/20 rounded-r-full" />
+            <div className="absolute top-20 left-0 w-8 h-2 bg-slate-900/20 rounded-r-full" />
+            <div className="absolute top-4 right-0 w-8 h-2 bg-slate-900/20 rounded-l-full" />
+            <div className="absolute top-12 right-0 w-10 h-2 bg-slate-900/20 rounded-l-full" />
+            <div className="absolute top-20 right-0 w-8 h-2 bg-slate-900/20 rounded-l-full" />
+          </div>
+        )}
+        {species === 'elephant' && (
+          <>
+            <div className="absolute top-1/4 -left-12 w-16 h-20 bg-blue-200 rounded-full border-2 border-blue-50 -z-10" />
+            <div className="absolute top-1/4 -right-12 w-16 h-20 bg-blue-200 rounded-full border-2 border-blue-50 -z-10" />
+            <div className="absolute top-[65%] left-1/2 -translate-x-1/2 w-6 h-16 bg-blue-200 rounded-full border-2 border-blue-50 origin-top rotate-[-10deg]" />
+          </>
+        )}
+        {species === 'dinosaur' && (
+          <div className="absolute -top-4 left-1/2 -translate-x-1/2 flex gap-1">
+            <div className="w-4 h-6 bg-emerald-600 rounded-t-full" />
+            <div className="w-4 h-8 bg-emerald-600 rounded-t-full" />
+            <div className="w-4 h-6 bg-emerald-600 rounded-t-full" />
+          </div>
+        )}
+        {species === 'fox' && (
+          <>
+            <div className="absolute -top-8 left-2 w-12 h-12 bg-orange-600" style={{ clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)' }} />
+            <div className="absolute -top-8 right-2 w-12 h-12 bg-orange-600" style={{ clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)' }} />
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-2/3 h-1/3 bg-white/40 rounded-t-full" />
+          </>
+        )}
+        {species === 'penguin' && (
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[80%] h-[70%] bg-white rounded-t-[50%] rounded-b-[20%]" />
+        )}
+        {species === 'lion' && (
+          <div className="absolute -inset-6 border-[16px] border-yellow-800/40 rounded-full -z-10" />
         )}
 
         {/* Face Container */}
