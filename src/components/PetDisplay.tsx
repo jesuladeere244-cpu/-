@@ -2,17 +2,17 @@ import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '@/src/lib/utils';
 import { PetSpecies } from '@/src/types';
-import { Utensils, Bath, Gamepad2, Sparkles as SparkleIcon } from 'lucide-react';
+import { Utensils, Bath, Gamepad2, Sparkles as SparkleIcon, BookOpen, Moon, Map, Wind, Sparkles, Zap } from 'lucide-react';
 
 interface PetDisplayProps {
   species: PetSpecies;
-  stage: 'baby' | 'child' | 'teen' | 'adult';
+  stage: 'baby' | 'child' | 'teen' | 'adult' | 'legendary' | 'mythical';
   happiness: number;
   energy: number;
   hygiene: number;
   isThinking?: boolean;
   message?: string;
-  activeAction?: 'feeding' | 'cleaning' | 'playing' | null;
+  activeAction?: 'feeding' | 'cleaning' | 'playing' | 'studying' | 'sleeping' | 'adventure' | 'meditation' | 'magic' | 'skill' | null;
   isEvolving?: boolean;
 }
 
@@ -36,6 +36,8 @@ export const PetDisplay: React.FC<PetDisplayProps> = ({
     child: { size: 'w-36 h-36', eyes: 'w-3.5 h-3.5', blush: 'w-4 h-2' },
     teen: { size: 'w-44 h-44', eyes: 'w-4.5 h-4.5', blush: 'w-5 h-2.5' },
     adult: { size: 'w-52 h-52', eyes: 'w-5.5 h-5.5', blush: 'w-6 h-3' },
+    legendary: { size: 'w-64 h-64', eyes: 'w-6.5 h-6.5', blush: 'w-8 h-4' },
+    mythical: { size: 'w-80 h-80', eyes: 'w-8 h-8', blush: 'w-10 h-5' },
   };
 
   const speciesConfig = {
@@ -132,30 +134,80 @@ export const PetDisplay: React.FC<PetDisplayProps> = ({
             initial={{ y: -60, opacity: 0, scale: 0.5 }}
             animate={{ y: 0, opacity: 1, scale: 1.2 }}
             exit={{ y: 30, opacity: 0, scale: 0.8 }}
-            className="absolute top-0 z-20"
+            className="absolute top-0 z-20 flex flex-col items-center"
           >
-            <Utensils className="w-14 h-14 text-orange-500 drop-shadow-lg" />
+            <div className="relative">
+              <Utensils className="w-14 h-14 text-orange-500 drop-shadow-lg" />
+              <motion.div
+                animate={{ scale: [1, 1.5, 1], opacity: [0, 1, 0] }}
+                transition={{ repeat: Infinity, duration: 0.5 }}
+                className="absolute -top-4 -right-4 text-2xl"
+              >
+                🍖
+              </motion.div>
+            </div>
+            {/* Food Bowl */}
+            <motion.div 
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              className="mt-20 w-24 h-10 bg-rose-400 rounded-b-full border-t-4 border-rose-600 relative overflow-hidden"
+            >
+              <div className="absolute inset-0 bg-amber-800/40" />
+            </motion.div>
           </motion.div>
         )}
         {activeAction === 'cleaning' && (
           <motion.div
-            initial={{ x: -80, opacity: 0 }}
-            animate={{ x: [ -80, 80, -80], opacity: 1 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 1.5, repeat: Infinity }}
-            className="absolute z-20 flex gap-3"
+            className="absolute inset-0 z-20 flex flex-col items-center justify-center pointer-events-none"
           >
-            <Bath className="w-14 h-14 text-cyan-400 drop-shadow-md" />
-            <div className="flex gap-2">
-              {[1,2,3,4].map(i => (
-                <motion.div 
+            {/* Shower Head */}
+            <motion.div
+              animate={{ x: [-40, 40, -40] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="absolute -top-20"
+            >
+              <div className="relative">
+                <div className="w-12 h-12 bg-slate-400 rounded-full border-4 border-slate-300" />
+                <div className="absolute top-full left-1/2 -translate-x-1/2 w-1 h-10 bg-slate-300" />
+                {/* Water Drops */}
+                <div className="absolute top-12 left-0 right-0 flex justify-around">
+                  {[1,2,3,4,5].map(i => (
+                    <motion.div
+                      key={i}
+                      animate={{ y: [0, 150], opacity: [0.8, 0] }}
+                      transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.1 }}
+                      className="w-1.5 h-6 bg-cyan-300/60 rounded-full blur-[1px]"
+                    />
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+            {/* Bathtub */}
+            <motion.div
+              initial={{ y: 100 }}
+              animate={{ y: 60 }}
+              className="w-64 h-24 bg-white border-4 border-slate-200 rounded-b-[4rem] relative overflow-hidden shadow-xl"
+            >
+              <div className="absolute inset-0 bg-cyan-100/40" />
+              <div className="absolute top-0 left-0 right-0 h-4 bg-slate-100" />
+              {/* Bubbles */}
+              {[1,2,3,4,5,6].map(i => (
+                <motion.div
                   key={i}
-                  animate={{ y: [-10, -40], x: [0, (i-2)*10], opacity: [1, 0], scale: [1, 1.5] }}
-                  transition={{ duration: 0.8, repeat: Infinity, delay: i * 0.15 }}
-                  className="w-4 h-4 bg-white/80 backdrop-blur-sm rounded-full border border-cyan-100"
+                  animate={{ 
+                    y: [10, -30], 
+                    x: [Math.random() * 200, Math.random() * 200],
+                    opacity: [0, 1, 0],
+                    scale: [0.5, 1.2]
+                  }}
+                  transition={{ duration: 2, repeat: Infinity, delay: i * 0.3 }}
+                  className="absolute w-6 h-6 bg-white/80 rounded-full border border-cyan-100"
                 />
               ))}
-            </div>
+            </motion.div>
           </motion.div>
         )}
         {activeAction === 'playing' && (
@@ -166,6 +218,111 @@ export const PetDisplay: React.FC<PetDisplayProps> = ({
             className="absolute top-0 z-20"
           >
             <Gamepad2 className="w-14 h-14 text-indigo-500 drop-shadow-xl" />
+          </motion.div>
+        )}
+        {activeAction === 'studying' && (
+          <motion.div
+            initial={{ y: -40, opacity: 0 }}
+            animate={{ y: [0, -20, 0], opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute -top-10 z-20"
+          >
+            <BookOpen className="w-14 h-14 text-emerald-500 drop-shadow-lg" />
+            <motion.div
+              animate={{ opacity: [0, 1, 0], y: [-10, -30] }}
+              transition={{ repeat: Infinity, duration: 1 }}
+              className="absolute -top-4 left-1/2 -translate-x-1/2 text-xs font-black text-emerald-600"
+            >
+              XP+
+            </motion.div>
+          </motion.div>
+        )}
+        {activeAction === 'sleeping' && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute -top-12 right-0 z-20"
+          >
+            <Moon className="w-10 h-10 text-indigo-400" />
+            <div className="absolute -top-4 -right-4 flex flex-col gap-1">
+              {[1, 2, 3].map(i => (
+                <motion.span
+                  key={i}
+                  animate={{ 
+                    opacity: [0, 1, 0],
+                    y: [0, -20],
+                    x: [0, 10],
+                    scale: [0.5, 1.2]
+                  }}
+                  transition={{ repeat: Infinity, duration: 2, delay: i * 0.6 }}
+                  className="text-indigo-400 font-black text-xl"
+                >
+                  Z
+                </motion.span>
+              ))}
+            </div>
+          </motion.div>
+        )}
+        {activeAction === 'adventure' && (
+          <motion.div
+            initial={{ scale: 0, x: -100 }}
+            animate={{ scale: 1, x: 100 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 2, repeat: Infinity }}
+            className="absolute z-20"
+          >
+            <Map className="w-16 h-16 text-orange-600 drop-shadow-xl" />
+          </motion.div>
+        )}
+        {activeAction === 'meditation' && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: [0, 1, 0], scale: [0.5, 2], rotate: 360 }}
+            transition={{ duration: 3, repeat: Infinity }}
+            className="absolute inset-0 z-20 flex items-center justify-center"
+          >
+            <Wind className="w-24 h-24 text-teal-400 opacity-40" />
+          </motion.div>
+        )}
+        {activeAction === 'magic' && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="absolute inset-0 z-20"
+          >
+            {[...Array(12)].map((_, i) => (
+              <motion.div
+                key={i}
+                animate={{
+                  scale: [0, 1, 0],
+                  x: [0, Math.cos(i * 30 * Math.PI / 180) * 150],
+                  y: [0, Math.sin(i * 30 * Math.PI / 180) * 150],
+                  opacity: [0, 1, 0]
+                }}
+                transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.1 }}
+                className="absolute left-1/2 top-1/2"
+              >
+                <Sparkles className="w-8 h-8 text-pink-400 fill-pink-400" />
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+        {activeAction === 'skill' && (
+          <motion.div
+            initial={{ scale: 0, rotate: -180 }}
+            animate={{ scale: [0, 1.5, 0], rotate: 0 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-30 flex items-center justify-center"
+          >
+            <div className="relative">
+              <Zap className="w-32 h-32 text-purple-500 fill-purple-200 drop-shadow-[0_0_20px_rgba(168,85,247,0.8)]" />
+              <motion.div
+                animate={{ scale: [1, 2], opacity: [1, 0] }}
+                transition={{ duration: 0.5, repeat: 3 }}
+                className="absolute inset-0 bg-purple-400 rounded-full blur-xl"
+              />
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -216,15 +373,15 @@ export const PetDisplay: React.FC<PetDisplayProps> = ({
         key={`${species}-${stage}`}
         initial={isEvolving ? { scale: 0.5, opacity: 0, filter: 'brightness(3)' } : false}
         animate={{
-          y: activeAction === 'playing' ? [0, -60, 0] : isHungry ? [0, 2, -2, 0] : [0, -12, 0],
-          scale: isEvolving ? [1, 1.2, 1] : activeAction === 'feeding' ? [1, 1.15, 1] : isHungry ? [1, 0.98, 1] : [1, 1.02, 1],
+          y: activeAction === 'playing' ? [0, -60, 0] : activeAction === 'sleeping' ? [0, 5, 0] : activeAction === 'cleaning' ? [0, 10, 0] : activeAction === 'meditation' ? [0, -10, 0] : activeAction === 'skill' ? [0, -40, 0] : isVeryHappy ? [0, -25, 0] : isHungry ? [0, 2, -2, 0] : [0, -12, 0],
+          scale: isEvolving ? [1, 1.2, 1] : activeAction === 'feeding' ? [1, 1.15, 1] : activeAction === 'sleeping' ? [1, 0.95, 1] : activeAction === 'cleaning' ? [1, 1.05, 1] : activeAction === 'magic' ? [1, 1.3, 1] : activeAction === 'skill' ? [1, 1.2, 1] : isHungry ? [1, 0.98, 1] : [1, 1.02, 1],
           opacity: 1,
-          filter: isEvolving ? ['brightness(3)', 'brightness(1)'] : 'brightness(1)',
-          rotate: activeAction === 'cleaning' ? [0, 8, -8, 0] : activeAction === 'feeding' ? [0, 360] : isHungry ? [0, -2, 2, 0] : 0,
+          filter: isEvolving ? ['brightness(3)', 'brightness(1)'] : activeAction === 'sleeping' ? 'brightness(0.8)' : activeAction === 'meditation' ? 'brightness(1.1) saturate(1.2)' : activeAction === 'skill' ? 'brightness(1.5) saturate(1.5)' : 'brightness(1)',
+          rotate: activeAction === 'cleaning' ? [0, 5, -5, 0] : activeAction === 'feeding' ? [0, 2, -2, 0] : activeAction === 'studying' ? [0, -5, 5, 0] : activeAction === 'adventure' ? [0, 10, -10, 0] : activeAction === 'skill' ? [0, 360] : isVeryHappy ? [0, 5, -5, 0] : isHungry ? [0, -2, 2, 0] : 0,
           skewX: isHungry ? [0, 2, -2, 0] : 0
         }}
         transition={{
-          duration: isEvolving ? 2 : activeAction === 'feeding' ? 0.8 : activeAction === 'playing' ? 0.6 : isHungry ? 0.2 : 3,
+          duration: isEvolving ? 2 : activeAction === 'feeding' ? 0.8 : activeAction === 'playing' ? 0.6 : activeAction === 'sleeping' ? 4 : activeAction === 'meditation' ? 2 : activeAction === 'skill' ? 0.5 : isVeryHappy ? 0.4 : isHungry ? 0.2 : 3,
           repeat: isEvolving ? 0 : Infinity,
           ease: activeAction === 'feeding' ? "backOut" : "easeInOut"
         }}
@@ -356,14 +513,57 @@ export const PetDisplay: React.FC<PetDisplayProps> = ({
           <div className="absolute -inset-6 border-[16px] border-yellow-800/40 rounded-full -z-10" />
         )}
 
+        {/* Legendary Aura */}
+        {stage === 'legendary' && (
+          <motion.div
+            animate={{ 
+              opacity: [0.2, 0.5, 0.2],
+              scale: [1, 1.1, 1],
+              rotate: [0, 360]
+            }}
+            transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+            className="absolute -inset-8 bg-gradient-to-tr from-yellow-400/30 via-orange-400/20 to-yellow-400/30 rounded-[inherit] blur-3xl -z-20"
+          />
+        )}
+        {stage === 'mythical' && (
+          <>
+            <motion.div
+              animate={{ 
+                opacity: [0.3, 0.6, 0.3],
+                scale: [1, 1.2, 1],
+                rotate: [360, 0]
+              }}
+              transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+              className="absolute -inset-12 bg-gradient-to-tr from-purple-500/40 via-pink-400/30 to-blue-500/40 rounded-[inherit] blur-[60px] -z-20"
+            />
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+              className="absolute -inset-16 border-4 border-dashed border-purple-300/30 rounded-full -z-10"
+            />
+          </>
+        )}
+
         {/* Face Container */}
         <div className="flex flex-col items-center gap-3">
           {/* Eyes */}
-          <div className="flex gap-6">
+          <div className="flex gap-6 relative">
+            {isHungry && (
+              <>
+                <motion.div 
+                  animate={{ rotate: [-20, -15, -20] }}
+                  className="absolute -top-4 left-0 w-6 h-1.5 bg-slate-900/40 rounded-full" 
+                />
+                <motion.div 
+                  animate={{ rotate: [20, 15, 20] }}
+                  className="absolute -top-4 right-0 w-6 h-1.5 bg-slate-900/40 rounded-full" 
+                />
+              </>
+            )}
             <motion.div 
               animate={{ 
-                scaleY: isHungry ? 0.3 : activeAction === 'feeding' ? 1.3 : [1, 1, 0.1, 1],
-                y: isHungry ? 2 : 0
+                scaleY: (isHungry || activeAction === 'sleeping') ? 0.1 : activeAction === 'feeding' ? 1.3 : [1, 1, 0.1, 1],
+                y: (isHungry || activeAction === 'sleeping') ? 2 : 0
               }}
               transition={{ duration: 4, repeat: Infinity, times: [0, 0.9, 0.95, 1] }}
               className={cn("bg-slate-900 rounded-full shadow-inner relative", current.eyes)} 
@@ -372,8 +572,8 @@ export const PetDisplay: React.FC<PetDisplayProps> = ({
             </motion.div>
             <motion.div 
               animate={{ 
-                scaleY: isHungry ? 0.3 : activeAction === 'feeding' ? 1.3 : [1, 1, 0.1, 1],
-                y: isHungry ? 2 : 0
+                scaleY: (isHungry || activeAction === 'sleeping') ? 0.1 : activeAction === 'feeding' ? 1.3 : [1, 1, 0.1, 1],
+                y: (isHungry || activeAction === 'sleeping') ? 2 : 0
               }}
               transition={{ duration: 4, repeat: Infinity, times: [0, 0.9, 0.95, 1] }}
               className={cn("bg-slate-900 rounded-full shadow-inner relative", current.eyes)} 
@@ -397,13 +597,16 @@ export const PetDisplay: React.FC<PetDisplayProps> = ({
           {/* Mouth */}
           <motion.div 
             animate={{
-              height: isHungry ? 2 : (happiness > 70 || activeAction === 'feeding') ? 12 : 4,
-              width: isHungry ? 12 : 16,
-              borderRadius: isHungry ? '2px' : '9999px'
+              height: isHungry ? 2 : (happiness > 85 || activeAction === 'feeding') ? 16 : (happiness > 70) ? 12 : 4,
+              width: isHungry ? 12 : (happiness > 85 || activeAction === 'feeding') ? 24 : 16,
+              borderRadius: isHungry ? '2px' : '9999px',
+              scale: activeAction === 'feeding' ? [1, 1.2, 1] : 1
             }}
+            transition={{ repeat: activeAction === 'feeding' ? Infinity : 0, duration: 0.3 }}
             className={cn(
-              "border-b-4 border-slate-900 transition-all",
-              isHungry ? "border-t-0" : ""
+              "border-b-4 border-slate-900 transition-all bg-slate-900/10",
+              isHungry ? "border-t-0" : "",
+              (happiness > 85 || activeAction === 'feeding') ? "bg-rose-500/20" : ""
             )} 
           />
         </div>

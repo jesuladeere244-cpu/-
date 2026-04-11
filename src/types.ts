@@ -8,6 +8,17 @@ export interface Task {
 
 export type PetSpecies = 'slime' | 'dragon' | 'cat' | 'robot' | 'rabbit' | 'panda' | 'frog' | 'pig' | 'tiger' | 'elephant' | 'dinosaur' | 'fox' | 'penguin' | 'lion';
 
+export interface PetSkill {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  minLevel: number;
+  unlocked: boolean;
+  cooldown?: number; // in seconds
+  lastUsed?: number;
+}
+
 export interface PetState {
   name: string;
   species: PetSpecies;
@@ -21,8 +32,9 @@ export interface PetState {
   lastFed: number;
   lastCheckIn?: number;
   streak: number;
-  evolutionStage: 'baby' | 'child' | 'teen' | 'adult';
+  evolutionStage: 'baby' | 'child' | 'teen' | 'adult' | 'legendary' | 'mythical';
   isInitialized: boolean;
+  skills: PetSkill[];
 }
 
 export interface AppState {

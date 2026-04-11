@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Users, Plus, UserCircle, ChevronRight } from 'lucide-react';
+import { Users, Plus, UserCircle, ChevronRight, Trash2 } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
 
 interface Profile {
@@ -14,6 +14,7 @@ interface Profile {
 interface ProfileSelectorProps {
   profiles: Profile[];
   onSelect: (id: string) => void;
+  onDelete: (id: string) => void;
   onCreate: () => void;
 }
 
@@ -24,7 +25,7 @@ const SPECIES_EMOJIS: Record<string, string> = {
   penguin: '🐧', lion: '🦁'
 };
 
-export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ profiles, onSelect, onCreate }) => {
+export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ profiles, onSelect, onDelete, onCreate }) => {
   return (
     <div className="w-full max-w-2xl mx-auto bg-white/90 backdrop-blur-xl rounded-[4rem] p-12 shadow-[20px_20px_0px_rgba(93,64,55,0.1)] border-4 border-[#5D4037] relative overflow-hidden">
       {/* Decorative elements */}
@@ -46,8 +47,20 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ profiles, onSe
             whileHover={{ scale: 1.05, rotate: 1 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => onSelect(profile.id)}
-            className="flex flex-col items-center gap-4 p-8 bg-[#FFF9F2] hover:bg-white border-4 border-[#D7CCC8] hover:border-[#FFAB91] rounded-[3rem] transition-all group text-center shadow-[8px_8px_0px_#D7CCC8] hover:shadow-[8px_8px_0px_#FFAB91]"
+            className="flex flex-col items-center gap-4 p-8 bg-[#FFF9F2] hover:bg-white border-4 border-[#D7CCC8] hover:border-[#FFAB91] rounded-[3rem] transition-all group text-center shadow-[8px_8px_0px_#D7CCC8] hover:shadow-[8px_8px_0px_#FFAB91] relative"
           >
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (window.confirm(`确定要删除 ${profile.name} 的档案吗？此操作不可恢复。`)) {
+                  onDelete(profile.id);
+                }
+              }}
+              className="absolute top-4 right-4 p-2 text-[#D7CCC8] hover:text-red-500 hover:bg-red-50 rounded-full transition-all opacity-0 group-hover:opacity-100"
+              title="删除档案"
+            >
+              <Trash2 className="w-5 h-5" />
+            </button>
             <div className="w-24 h-24 bg-white rounded-[2.5rem] flex items-center justify-center text-[#FF7043] border-4 border-[#EFEBE9] group-hover:border-[#FFAB91] transition-colors shadow-inner text-5xl">
               {SPECIES_EMOJIS[profile.petSpecies] || <UserCircle className="w-16 h-16" />}
             </div>

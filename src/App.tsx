@@ -3,14 +3,24 @@ import confetti from 'canvas-confetti';
 import { PetDisplay } from './components/PetDisplay';
 import { TaskList } from './components/TaskList';
 import { Stats } from './components/Stats';
+import { SkillSystem } from './components/SkillSystem';
 import { PetSelection } from './components/PetSelection';
 import { InteractionPanel } from './components/InteractionPanel';
 import { Leaderboard } from './components/Leaderboard';
 import { ProfileSelector } from './components/ProfileSelector';
 import { Task, PetState, AppState, PetSpecies } from './types';
 import { getPetEncouragement, getPetDailyGreeting } from './services/gemini';
-import { Sparkles, Trophy, Edit2, Calendar, Layout, Users, LogOut } from 'lucide-react';
+import { Sparkles, Trophy, Edit2, Calendar, Layout, Users, LogOut, Volume2, VolumeX } from 'lucide-react';
+import { audioService } from './services/audioService';
 import { cn } from './lib/utils';
+
+const DEFAULT_SKILLS = [
+  { id: 's1', name: '专注光环', description: '被动：任务获得的经验值增加 10%', icon: 'Target', minLevel: 3, unlocked: false },
+  { id: 's2', name: '活力焕发', description: '主动：瞬间恢复 20 点体力', icon: 'Zap', minLevel: 8, unlocked: false, cooldown: 3600 },
+  { id: 's3', name: '智慧之光', description: '主动：瞬间获得 100 点经验值', icon: 'Brain', minLevel: 15, unlocked: false, cooldown: 7200 },
+  { id: 's4', name: '幸运星', description: '被动：任务有 20% 概率获得双倍学习币', icon: 'Star', minLevel: 22, unlocked: false },
+  { id: 's5', name: '神圣庇护', description: '被动：心情和卫生下降速度减慢 50%', icon: 'Shield', minLevel: 35, unlocked: false },
+];
 
 const INITIAL_PET_STATE = (name: string = "", species: PetSpecies = 'slime'): PetState => ({
   name,
@@ -26,6 +36,7 @@ const INITIAL_PET_STATE = (name: string = "", species: PetSpecies = 'slime'): Pe
   streak: 0,
   evolutionStage: 'baby',
   isInitialized: !!name,
+  skills: DEFAULT_SKILLS,
 });
 
 const INITIAL_STATE: AppState = {
@@ -42,16 +53,34 @@ const MOCK_LEADERBOARD = [
 export default function App() {
   const [state, setState] = useState<AppState>(() => {
     const saved = localStorage.getItem('smarty_pet_state_v2');
-    return saved ? JSON.parse(saved) : INITIAL_STATE;
+    if (!saved) return INITIAL_STATE;
+    
+    const parsed = JSON.parse(saved) as AppState;
+    // Migration: ensure all pets have skills
+    Object.keys(parsed.profiles).forEach(id => {
+      if (!parsed.profiles[id].pet.skills) {
+        parsed.profiles[id].pet.skills = DEFAULT_SKILLS.map(s => ({
+          ...s,
+          unlocked: parsed.profiles[id].pet.level >= s.minLevel
+        }));
+      }
+    });
+    return parsed;
   });
 
   const [message, setMessage] = useState<string>('');
   const [isThinking, setIsThinking] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
-  const [activeAction, setActiveAction] = useState<'feeding' | 'cleaning' | 'playing' | null>(null);
+  const [activeAction, setActiveAction] = useState<'feeding' | 'cleaning' | 'playing' | 'studying' | 'sleeping' | 'adventure' | 'meditation' | 'magic' | null>(null);
   const [activeTab, setActiveTab] = useState<'pet' | 'leaderboard'>('pet');
   const [showPetSelection, setShowPetSelection] = useState(false);
   const [isEvolving, setIsEvolving] = useState(false);
+  const [isMuted, setIsMuted] = useState(() => audioService.isMuted());
+
+  const toggleMute = () => {
+    const newMuted = audioService.toggleMute();
+    setIsMuted(newMuted);
+  };
 
   // Save to localStorage
   useEffect(() => {
@@ -116,7 +145,59 @@ export default function App() {
     checkDailyStatus();
   }, [state.activeProfileId]);
 
+  useEffect(() => {
+    if (!activeProfile || message) return;
+
+    const encouragementInterval = setInterval(() => {
+      const messages = [
+        "小主人，我们一起去学习吧，我想看你认真的样子！",
+        "今天也要加油哦，完成任务我就能快快长大啦！",
+        "学习会让大脑变聪明，我们一起努力吧！",
+        "小主人，休息好了吗？我们要不要开始今天的挑战？",
+        "你学习的时候最帅/最美了，加油加油！"
+      ];
+      const randomMsg = messages[Math.floor(Math.random() * messages.length)];
+      setMessage(randomMsg);
+      setTimeout(() => setMessage(''), 5000);
+    }, 30000); // Every 30 seconds if idle
+
+    return () => clearInterval(encouragementInterval);
+  }, [activeProfile, message]);
+
+  useEffect(() => {
+    if (!activeProfile || !activeProfile.pet.isInitialized) return;
+
+    const decayInterval = setInterval(() => {
+      setState(prev => {
+        const p = prev.profiles[prev.activeProfileId!];
+        if (!p) return prev;
+
+        const hasDivineProtection = p.pet.skills.find(s => s.id === 's5')?.unlocked;
+        const decayAmount = hasDivineProtection ? 0.5 : 1;
+
+        return {
+          ...prev,
+          profiles: {
+            ...prev.profiles,
+            [prev.activeProfileId!]: {
+              ...p,
+              pet: {
+                ...p.pet,
+                happiness: Math.max(0, p.pet.happiness - decayAmount),
+                hygiene: Math.max(0, p.pet.hygiene - decayAmount),
+                energy: Math.max(0, p.pet.energy - decayAmount * 0.5),
+              }
+            }
+          }
+        };
+      });
+    }, 60000); // Every minute
+
+    return () => clearInterval(decayInterval);
+  }, [state.activeProfileId, !!activeProfile]);
+
   const handleSelectProfile = (id: string) => {
+    audioService.play('click');
     setState(prev => ({ ...prev, activeProfileId: id }));
     setActiveTab('pet');
     setMessage(`欢迎回来！`);
@@ -124,6 +205,7 @@ export default function App() {
   };
 
   const handleCreateProfile = () => {
+    audioService.play('click');
     setShowPetSelection(true);
   };
 
@@ -144,6 +226,7 @@ export default function App() {
     }));
     
     setShowPetSelection(false);
+    audioService.play('evolution');
     confetti({ particleCount: 150, spread: 100, origin: { y: 0.5 } });
   };
 
@@ -152,11 +235,32 @@ export default function App() {
     setActiveTab('pet');
   };
 
+  const handleDeleteProfile = (id: string) => {
+    setState(prev => {
+      const newProfiles = { ...prev.profiles };
+      delete newProfiles[id];
+      return {
+        ...prev,
+        profiles: newProfiles,
+        activeProfileId: prev.activeProfileId === id ? null : prev.activeProfileId
+      };
+    });
+  };
+
   const handleEvolution = (oldStage: string, newStage: string) => {
     if (oldStage === newStage) return;
     
     setIsEvolving(true);
-    setMessage(`天哪！${activeProfile?.pet.name} 正在进化成 ${newStage === 'child' ? '幼儿期' : newStage === 'teen' ? '成长期' : '成熟期'}！`);
+    audioService.play('evolution');
+    const stageNames = {
+      baby: '幼年期',
+      child: '幼儿期',
+      teen: '成长期',
+      adult: '成熟期',
+      legendary: '传说期',
+      mythical: '神话期'
+    };
+    setMessage(`天哪！${activeProfile?.pet.name} 正在进化成 ${stageNames[newStage as keyof typeof stageNames]}！`);
     
     // Multi-stage fireworks
     const duration = 3000;
@@ -235,6 +339,7 @@ export default function App() {
     const isCompleting = !task.completed;
 
     if (isCompleting) {
+      audioService.play('success');
       confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
 
       let evolved = false;
@@ -243,18 +348,32 @@ export default function App() {
 
       setState(prev => {
         const p = prev.profiles[prev.activeProfileId!];
-        let newXp = p.pet.xp + task.xpValue;
+        
+        // Passive Skills Check
+        const hasFocusAura = p.pet.skills?.find(s => s.id === 's1')?.unlocked;
+        const hasLuckyStar = p.pet.skills?.find(s => s.id === 's4')?.unlocked;
+        
+        const xpBonus = hasFocusAura ? Math.floor(task.xpValue * 0.1) : 0;
+        const pointsBonus = (hasLuckyStar && Math.random() < 0.2) ? 10 : 0;
+        
+        let newXp = p.pet.xp + task.xpValue + xpBonus;
         let newLevel = p.pet.level;
         let newNextLevelXp = p.pet.nextLevelXp;
         let newStage = p.pet.evolutionStage;
-        const pointsEarned = 10;
+        const pointsEarned = 10 + pointsBonus;
+
+        if (pointsBonus > 0) {
+          setTimeout(() => setMessage('触发了【幸运星】！获得了额外学习币！✨'), 500);
+        }
 
         if (newXp >= newNextLevelXp) {
           newLevel += 1;
           newXp -= newNextLevelXp;
           newNextLevelXp = Math.floor(newNextLevelXp * 1.2);
           
-          if (newLevel >= 15) newStage = 'adult';
+          if (newLevel >= 40) newStage = 'mythical';
+          else if (newLevel >= 25) newStage = 'legendary';
+          else if (newLevel >= 15) newStage = 'adult';
           else if (newLevel >= 10) newStage = 'teen';
           else if (newLevel >= 5) newStage = 'child';
           
@@ -263,6 +382,11 @@ export default function App() {
             newS = newStage;
           }
         }
+
+        const updatedSkills = (p.pet.skills || []).map(s => ({
+          ...s,
+          unlocked: s.unlocked || newLevel >= s.minLevel
+        }));
 
         return {
           ...prev,
@@ -278,7 +402,8 @@ export default function App() {
                 nextLevelXp: newNextLevelXp,
                 evolutionStage: newStage as any,
                 happiness: Math.min(100, p.pet.happiness + 5),
-                points: p.pet.points + pointsEarned
+                points: p.pet.points + pointsEarned,
+                skills: updatedSkills
               }
             }
           }
@@ -323,12 +448,74 @@ export default function App() {
     }));
   };
 
-  const handleInteraction = (type: 'feeding' | 'cleaning' | 'playing') => {
+  const handleUseSkill = (skillId: string) => {
     if (!state.activeProfileId || !activeProfile) return;
-    const costs = { feeding: 10, cleaning: 5, playing: 15 };
+    
+    const skill = activeProfile.pet.skills?.find(s => s.id === skillId);
+    if (!skill || !skill.unlocked) return;
+
+    const isCooldown = skill.lastUsed && skill.cooldown && (Date.now() - skill.lastUsed < skill.cooldown * 1000);
+    if (isCooldown) return;
+
+    audioService.play('evolution');
+    confetti({ particleCount: 50, spread: 60, colors: ['#9575CD'] });
+    setActiveAction('skill');
+
+    setState(prev => {
+      const p = prev.profiles[prev.activeProfileId!];
+      const newPet = { ...p.pet };
+      
+      newPet.skills = (newPet.skills || []).map(s => s.id === skillId ? { ...s, lastUsed: Date.now() } : s);
+
+      if (skillId === 's2') { // Vitality Burst
+        newPet.energy = Math.min(100, newPet.energy + 20);
+        setMessage(`使用了技能【${skill.name}】！体力恢复了！`);
+      } else if (skillId === 's3') { // Light of Wisdom
+        newPet.xp += 100;
+        setMessage(`使用了技能【${skill.name}】！获得了大量经验值！`);
+        // Check for level up here too if needed, but keeping it simple for now
+      }
+
+      return {
+        ...prev,
+        profiles: {
+          ...prev.profiles,
+          [prev.activeProfileId!]: { ...p, pet: newPet }
+        }
+      };
+    });
+
+    setTimeout(() => {
+      setActiveAction(null);
+      setTimeout(() => setMessage(''), 3000);
+    }, 1500);
+  };
+
+  const handleInteraction = (type: 'feeding' | 'cleaning' | 'playing' | 'studying' | 'sleeping' | 'adventure' | 'meditation' | 'magic') => {
+    if (!state.activeProfileId || !activeProfile) return;
+    const costs = { 
+      feeding: 10, 
+      cleaning: 5, 
+      playing: 15, 
+      studying: 20, 
+      sleeping: 0,
+      adventure: 30,
+      meditation: 25,
+      magic: 50
+    };
     if (activeProfile.pet.points < costs[type]) return;
 
     setActiveAction(type);
+    audioService.play(
+      type === 'feeding' ? 'eat' : 
+      type === 'cleaning' ? 'shower' : 
+      type === 'playing' ? 'play' : 
+      type === 'studying' ? 'study' : 
+      type === 'sleeping' ? 'sleep' :
+      type === 'adventure' ? 'play' :
+      type === 'meditation' ? 'sleep' :
+      'evolution'
+    );
     setState(prev => {
       const p = prev.profiles[prev.activeProfileId!];
       const newPet = { ...p.pet };
@@ -337,15 +524,41 @@ export default function App() {
       if (type === 'feeding') {
         newPet.energy = Math.min(100, newPet.energy + 30);
         newPet.happiness = Math.min(100, newPet.happiness + 5);
-        setMessage(`真好吃！谢谢主人喂我！`);
+        setMessage(`谢谢你给我美味的饭菜，好好吃，大口大口吃掉啦！😋`);
       } else if (type === 'cleaning') {
         newPet.hygiene = Math.min(100, newPet.hygiene + 50);
         newPet.happiness = Math.min(100, newPet.happiness + 5);
-        setMessage(`洗白白，真舒服！`);
+        setMessage(`好舒服啊，谢谢你主人！洗得白白净净的～🧼`);
       } else if (type === 'playing') {
         newPet.happiness = Math.min(100, newPet.happiness + 30);
         newPet.energy = Math.max(0, newPet.energy - 20);
         setMessage(`太好玩啦！我们再玩一会吧！`);
+      } else if (type === 'studying') {
+        newPet.xp += 40;
+        newPet.happiness = Math.min(100, newPet.happiness + 10);
+        newPet.energy = Math.max(0, newPet.energy - 15);
+        setMessage(`和主人一起学习最开心了！XP增加了！`);
+      } else if (type === 'sleeping') {
+        newPet.energy = Math.min(100, newPet.energy + 60);
+        newPet.happiness = Math.min(100, newPet.happiness + 5);
+        setMessage(`呼呼...做个好梦...`);
+      } else if (type === 'adventure') {
+        newPet.xp += 80;
+        newPet.points += 15;
+        newPet.energy = Math.max(0, newPet.energy - 40);
+        newPet.happiness = Math.min(100, newPet.happiness + 20);
+        setMessage(`哇！我们在森林里发现了宝藏！XP和学习币都增加了！`);
+      } else if (type === 'meditation') {
+        newPet.energy = Math.min(100, newPet.energy + 20);
+        newPet.happiness = Math.min(100, newPet.happiness + 40);
+        newPet.xp += 20;
+        setMessage(`静下心来，感觉充满了智慧的力量...`);
+      } else if (type === 'magic') {
+        newPet.xp += 150;
+        newPet.energy = Math.max(0, newPet.energy - 30);
+        newPet.happiness = Math.min(100, newPet.happiness + 50);
+        confetti({ particleCount: 100, spread: 70, colors: ['#ff00ff', '#00ffff'] });
+        setMessage(`这就是魔法的力量吗？太神奇了！XP大幅提升！`);
       }
 
       return {
@@ -365,6 +578,7 @@ export default function App() {
 
   const handleBattle = () => {
     if (!activeProfile) return;
+    audioService.play('click');
     const opponent = MOCK_LEADERBOARD[Math.floor(Math.random() * MOCK_LEADERBOARD.length)];
     setIsThinking(true);
     setMessage(`正在与 ${opponent.name} 的宠物 ${opponent.petName} 进行学习力比拼...`);
@@ -409,6 +623,7 @@ export default function App() {
 
   const handleVisit = () => {
     if (!activeProfile) return;
+    audioService.play('click');
     const friend = MOCK_LEADERBOARD[Math.floor(Math.random() * MOCK_LEADERBOARD.length)];
     setMessage(`正在访问 ${friend.name} 的家...`);
     setTimeout(() => {
@@ -449,6 +664,7 @@ export default function App() {
         <ProfileSelector 
           profiles={profileList} 
           onSelect={handleSelectProfile} 
+          onDelete={handleDeleteProfile}
           onCreate={handleCreateProfile} 
         />
       </div>
@@ -486,6 +702,13 @@ export default function App() {
           </div>
           
           <div className="flex items-center gap-4">
+            <button
+              onClick={toggleMute}
+              className="p-3 bg-white/80 hover:bg-white text-[#5D4037] rounded-2xl border-2 border-[#5D4037] shadow-[4px_4px_0px_#5D4037] transition-all active:translate-y-[2px] active:shadow-none"
+              title={isMuted ? "取消静音" : "静音"}
+            >
+              {isMuted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
+            </button>
             <div className="flex bg-[#EFEBE9] p-2 rounded-[2.5rem] border-4 border-[#D7CCC8]">
               <button
                 onClick={() => setActiveTab('pet')}
@@ -557,8 +780,15 @@ export default function App() {
               <div className="w-full bg-[#FFF3E0] p-6 rounded-[2.5rem] border-4 border-[#FFE0B2] mb-8">
                 <Stats pet={activeProfile.pet} />
               </div>
+
+              <SkillSystem skills={activeProfile.pet.skills} onUseSkill={handleUseSkill} />
               
-              <InteractionPanel points={activeProfile.pet.points} onAction={handleInteraction} disabled={!!activeAction} />
+              <InteractionPanel 
+                points={activeProfile.pet.points} 
+                level={activeProfile.pet.level}
+                onAction={handleInteraction} 
+                disabled={!!activeAction} 
+              />
 
               <div className="grid grid-cols-2 gap-6 w-full max-w-md mt-8">
                 <button onClick={handleBattle} disabled={!!activeAction || isThinking} className="flex items-center justify-center gap-3 py-4 bg-[#FF8A65] text-white rounded-[2rem] text-lg font-black shadow-[6px_6px_0px_#D84315] hover:translate-y-[-2px] active:translate-y-[2px] active:shadow-none transition-all disabled:opacity-50 border-2 border-[#5D4037]">
