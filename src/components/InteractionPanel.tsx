@@ -1,12 +1,12 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Utensils, Bath, Gamepad2, Coins, BookOpen, Moon, Map, Wind, Sparkles, Lock } from 'lucide-react';
+import { Utensils, Bath, Gamepad2, Coins, BookOpen, Moon, Map, Wind, Sparkles, Lock, Sword } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
 
 interface InteractionPanelProps {
   points: number;
   level: number;
-  onAction: (type: 'feeding' | 'cleaning' | 'playing' | 'studying' | 'sleeping' | 'adventure' | 'meditation' | 'magic') => void;
+  onAction: (type: 'feeding' | 'cleaning' | 'playing' | 'studying' | 'sleeping' | 'adventure' | 'meditation' | 'magic' | 'training') => void;
   disabled?: boolean;
 }
 
@@ -17,6 +17,7 @@ export const InteractionPanel: React.FC<InteractionPanelProps> = ({ points, leve
     { type: 'playing' as const, label: '玩耍', icon: Gamepad2, cost: 15, minLevel: 1, color: 'bg-[#D1C4E9]', border: 'border-[#5E35B1]', shadow: 'shadow-[4px_4px_0px_#5E35B1]' },
     { type: 'studying' as const, label: '学习', icon: BookOpen, cost: 20, minLevel: 1, color: 'bg-[#C8E6C9]', border: 'border-[#388E3C]', shadow: 'shadow-[4px_4px_0px_#388E3C]' },
     { type: 'sleeping' as const, label: '睡觉', icon: Moon, cost: 0, minLevel: 1, color: 'bg-[#E1F5FE]', border: 'border-[#0288D1]', shadow: 'shadow-[4px_4px_0px_#0288D1]' },
+    { type: 'training' as const, label: '训练', icon: Sword, cost: 40, minLevel: 5, color: 'bg-[#FFCCBC]', border: 'border-[#FF5722]', shadow: 'shadow-[4px_4px_0px_#FF5722]' },
     { type: 'adventure' as const, label: '探险', icon: Map, cost: 30, minLevel: 10, color: 'bg-[#FFAB91]', border: 'border-[#D84315]', shadow: 'shadow-[4px_4px_0px_#D84315]' },
     { type: 'meditation' as const, label: '冥想', icon: Wind, cost: 25, minLevel: 18, color: 'bg-[#B2DFDB]', border: 'border-[#00796B]', shadow: 'shadow-[4px_4px_0px_#00796B]' },
     { type: 'magic' as const, label: '魔法', icon: Sparkles, cost: 50, minLevel: 30, color: 'bg-[#F8BBD0]', border: 'border-[#C2185B]', shadow: 'shadow-[4px_4px_0px_#C2185B]' },

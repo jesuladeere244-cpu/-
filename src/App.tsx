@@ -4,13 +4,15 @@ import { PetDisplay } from './components/PetDisplay';
 import { TaskList } from './components/TaskList';
 import { Stats } from './components/Stats';
 import { SkillSystem } from './components/SkillSystem';
+import { Shop } from './components/Shop';
+import { LearningGoals } from './components/LearningGoals';
 import { PetSelection } from './components/PetSelection';
 import { InteractionPanel } from './components/InteractionPanel';
 import { Leaderboard } from './components/Leaderboard';
 import { ProfileSelector } from './components/ProfileSelector';
-import { Task, PetState, AppState, PetSpecies } from './types';
+import { Task, PetState, AppState, PetSpecies, ShopItem, LearningGoal } from './types';
 import { getPetEncouragement, getPetDailyGreeting } from './services/gemini';
-import { Sparkles, Trophy, Edit2, Calendar, Layout, Users, LogOut, Volume2, VolumeX } from 'lucide-react';
+import { Sparkles, Trophy, Edit2, Calendar, Layout, Users, LogOut, Volume2, VolumeX, ShoppingBag, Target as TargetIcon } from 'lucide-react';
 import { audioService } from './services/audioService';
 import { cn } from './lib/utils';
 
@@ -20,6 +22,23 @@ const DEFAULT_SKILLS = [
   { id: 's3', name: '智慧之光', description: '主动：瞬间获得 100 点经验值', icon: 'Brain', minLevel: 15, unlocked: false, cooldown: 7200 },
   { id: 's4', name: '幸运星', description: '被动：任务有 20% 概率获得双倍学习币', icon: 'Star', minLevel: 22, unlocked: false },
   { id: 's5', name: '神圣庇护', description: '被动：心情和卫生下降速度减慢 50%', icon: 'Shield', minLevel: 35, unlocked: false },
+];
+
+const DEFAULT_SHOP_ITEMS: ShopItem[] = [
+  { id: 'i1', name: '美味甜甜圈', price: 50, icon: '🍩', description: '一个甜甜的奖励，会让宠物非常开心！', category: 'pet' },
+  { id: 'i2', name: '超级能量饮', price: 100, icon: '🥤', description: '瞬间充满活力，学习更有劲！', category: 'pet' },
+  { id: 'i3', name: '酷炫墨镜', price: 200, icon: '🕶️', description: '戴上它，你就是整条街最靓的宠！', category: 'pet' },
+  { id: 'i4', name: '智慧皇冠', price: 500, icon: '👑', description: '只有真正的学霸宠物才配拥有。', category: 'pet' },
+  { id: 'i5', name: '神秘宝箱', price: 1000, icon: '📦', description: '里面藏着不可思议的惊喜...', category: 'pet' },
+  { id: 'p1', name: '看一集动画片', price: 150, icon: '📺', description: '家长奖励：可以看一集最喜欢的动画片。', category: 'personal' },
+  { id: 'p2', name: '周末去游乐园', price: 2000, icon: '🎡', description: '家长奖励：周末全家一起去游乐园玩！', category: 'personal' },
+];
+
+const DEFAULT_GOALS: LearningGoal[] = [
+  { id: 'g1', title: '初级学者', type: 'tasks', target: 5, current: 0, rewardPoints: 50, isCompleted: false },
+  { id: 'g2', title: '勤奋标兵', type: 'tasks', target: 20, current: 0, rewardPoints: 200, isCompleted: false },
+  { id: 'g3', title: '等级突破', type: 'level', target: 10, current: 1, rewardPoints: 300, isCompleted: false },
+  { id: 'g4', title: '知识渊博', type: 'xp', target: 5000, current: 0, rewardPoints: 500, isCompleted: false },
 ];
 
 const INITIAL_PET_STATE = (name: string = "", species: PetSpecies = 'slime'): PetState => ({
@@ -37,6 +56,7 @@ const INITIAL_PET_STATE = (name: string = "", species: PetSpecies = 'slime'): Pe
   evolutionStage: 'baby',
   isInitialized: !!name,
   skills: DEFAULT_SKILLS,
+  inventory: [],
 });
 
 const INITIAL_STATE: AppState = {
@@ -56,12 +76,34 @@ export default function App() {
     if (!saved) return INITIAL_STATE;
     
     const parsed = JSON.parse(saved) as AppState;
-    // Migration: ensure all pets have skills
+    // Migration: ensure all pets have skills, inventory, shopItems, and goals
     Object.keys(parsed.profiles).forEach(id => {
-      if (!parsed.profiles[id].pet.skills) {
-        parsed.profiles[id].pet.skills = DEFAULT_SKILLS.map(s => ({
+      const profile = parsed.profiles[id];
+      if (!profile.pet.skills) {
+        profile.pet.skills = DEFAULT_SKILLS.map(s => ({
           ...s,
-          unlocked: parsed.profiles[id].pet.level >= s.minLevel
+          unlocked: profile.pet.level >= s.minLevel
+        }));
+      }
+      if (!profile.pet.inventory) {
+        profile.pet.inventory = [];
+      }
+      if (!profile.shopItems) {
+        profile.shopItems = DEFAULT_SHOP_ITEMS;
+      } else {
+        // Ensure category exists
+        profile.shopItems = profile.shopItems.map(item => ({
+          ...item,
+          category: item.category || 'pet'
+        }));
+      }
+      if (!profile.goals) {
+        profile.goals = DEFAULT_GOALS;
+      } else {
+        // Ensure rewardPoints exists
+        profile.goals = profile.goals.map(goal => ({
+          ...goal,
+          rewardPoints: goal.rewardPoints || 50
         }));
       }
     });
@@ -71,8 +113,8 @@ export default function App() {
   const [message, setMessage] = useState<string>('');
   const [isThinking, setIsThinking] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
-  const [activeAction, setActiveAction] = useState<'feeding' | 'cleaning' | 'playing' | 'studying' | 'sleeping' | 'adventure' | 'meditation' | 'magic' | null>(null);
-  const [activeTab, setActiveTab] = useState<'pet' | 'leaderboard'>('pet');
+  const [activeAction, setActiveAction] = useState<'feeding' | 'cleaning' | 'playing' | 'studying' | 'sleeping' | 'adventure' | 'meditation' | 'magic' | 'skill' | 'training' | null>(null);
+  const [activeTab, setActiveTab] = useState<'pet' | 'leaderboard' | 'shop' | 'goals'>('pet');
   const [showPetSelection, setShowPetSelection] = useState(false);
   const [isEvolving, setIsEvolving] = useState(false);
   const [isMuted, setIsMuted] = useState(() => audioService.isMuted());
@@ -196,6 +238,57 @@ export default function App() {
     return () => clearInterval(decayInterval);
   }, [state.activeProfileId, !!activeProfile]);
 
+  // Update goals based on pet level and xp
+  useEffect(() => {
+    if (!activeProfile || !activeProfile.pet.isInitialized) return;
+
+    setState(prev => {
+      const p = prev.profiles[prev.activeProfileId!];
+      if (!p) return prev;
+
+      let changed = false;
+      let pointsAwarded = 0;
+      const updatedGoals = p.goals.map(goal => {
+        let current = goal.current;
+        if (goal.type === 'level') current = p.pet.level;
+        if (goal.type === 'xp') current = p.pet.xp; 
+        if (goal.type === 'tasks') current = p.tasks.filter(t => t.completed).length;
+
+        if (current !== goal.current) {
+          changed = true;
+          const isCompleted = current >= goal.target;
+          if (isCompleted && !goal.isCompleted) {
+            pointsAwarded += goal.rewardPoints;
+            setTimeout(() => {
+              audioService.play('levelUp');
+              confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
+              setMessage(`恭喜！你达成了学习目标：【${goal.title}】！获得了 ${goal.rewardPoints} 学习币！🎉`);
+            }, 500);
+          }
+          return { ...goal, current, isCompleted: current >= goal.target };
+        }
+        return goal;
+      });
+
+      if (!changed) return prev;
+
+      return {
+        ...prev,
+        profiles: {
+          ...prev.profiles,
+          [prev.activeProfileId!]: { 
+            ...p, 
+            goals: updatedGoals,
+            pet: {
+              ...p.pet,
+              points: p.pet.points + pointsAwarded
+            }
+          }
+        }
+      };
+    });
+  }, [activeProfile?.pet.level, activeProfile?.pet.xp, activeProfile?.tasks.filter(t => t.completed).length]);
+
   const handleSelectProfile = (id: string) => {
     audioService.play('click');
     setState(prev => ({ ...prev, activeProfileId: id }));
@@ -211,15 +304,40 @@ export default function App() {
 
   const handleInitializePet = (name: string, species: PetSpecies) => {
     const profileId = Math.random().toString(36).substr(2, 9);
-    const childName = Object.keys(state.profiles).length === 0 ? "大宝贝" : "小宝贝";
     
+    const pokemonSkills: Record<string, any[]> = {
+      bulbasaur: [
+        { id: 'pb1', name: '寄生种子', description: '每小时自动恢复 5 点体力', icon: 'Leaf', minLevel: 5, unlocked: false },
+        { id: 'pb2', name: '阳光烈焰', description: '瞬间完成当前最久的一个任务', icon: 'Sun', minLevel: 20, unlocked: false, cooldown: 86400 }
+      ],
+      charmander: [
+        { id: 'pc1', name: '喷射火焰', description: '任务获得的经验值增加 20%', icon: 'Flame', minLevel: 5, unlocked: false },
+        { id: 'pc2', name: '大字爆炎', description: '瞬间获得 500 点经验值', icon: 'Zap', minLevel: 25, unlocked: false, cooldown: 172800 }
+      ],
+      squirtle: [
+        { id: 'ps1', name: '水枪', description: '卫生下降速度减慢 30%', icon: 'Droplets', minLevel: 5, unlocked: false },
+        { id: 'ps2', name: '水炮', description: '瞬间恢复 50 点体力', icon: 'Waves', minLevel: 20, unlocked: false, cooldown: 43200 }
+      ],
+      pikachu: [
+        { id: 'pp1', name: '十万伏特', description: '任务获得的学习币增加 50%', icon: 'Zap', minLevel: 5, unlocked: false },
+        { id: 'pp2', name: '打雷', description: '瞬间完成所有已过期的任务', icon: 'CloudLightning', minLevel: 30, unlocked: false, cooldown: 259200 }
+      ]
+    };
+
+    const initialSkills = [...DEFAULT_SKILLS, ...(pokemonSkills[species] || [])];
+
     setState(prev => ({
       ...prev,
       profiles: {
         ...prev.profiles,
         [profileId]: {
           tasks: [],
-          pet: INITIAL_PET_STATE(name, species)
+          pet: {
+            ...INITIAL_PET_STATE(name, species),
+            skills: initialSkills
+          },
+          shopItems: DEFAULT_SHOP_ITEMS,
+          goals: DEFAULT_GOALS,
         }
       },
       activeProfileId: profileId
@@ -308,6 +426,101 @@ export default function App() {
       }));
       setIsEditingName(false);
     }
+  };
+
+  const handlePurchase = (itemId: string) => {
+    if (!state.activeProfileId || !activeProfile) return;
+    
+    const item = activeProfile.shopItems.find(i => i.id === itemId);
+    if (!item || activeProfile.pet.points < item.price) return;
+
+    audioService.play('success');
+    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+    
+    setState(prev => {
+      const p = prev.profiles[prev.activeProfileId!];
+      return {
+        ...prev,
+        profiles: {
+          ...prev.profiles,
+          [prev.activeProfileId!]: {
+            ...p,
+            pet: {
+              ...p.pet,
+              points: p.pet.points - item.price,
+              inventory: [...p.pet.inventory, itemId],
+              happiness: Math.min(100, p.pet.happiness + 20)
+            }
+          }
+        }
+      };
+    });
+    
+    setMessage(`成功兑换了【${item.name}】！太开心啦！✨`);
+    setTimeout(() => setMessage(''), 3000);
+  };
+
+  const handleAddShopItem = (item: Omit<ShopItem, 'id'>) => {
+    if (!state.activeProfileId) return;
+    const newItem: ShopItem = { ...item, id: Math.random().toString(36).substr(2, 9) };
+    setState(prev => ({
+      ...prev,
+      profiles: {
+        ...prev.profiles,
+        [prev.activeProfileId!]: {
+          ...prev.profiles[prev.activeProfileId!],
+          shopItems: [...prev.profiles[prev.activeProfileId!].shopItems, newItem]
+        }
+      }
+    }));
+  };
+
+  const handleDeleteShopItem = (itemId: string) => {
+    if (!state.activeProfileId) return;
+    setState(prev => ({
+      ...prev,
+      profiles: {
+        ...prev.profiles,
+        [prev.activeProfileId!]: {
+          ...prev.profiles[prev.activeProfileId!],
+          shopItems: prev.profiles[prev.activeProfileId!].shopItems.filter(i => i.id !== itemId)
+        }
+      }
+    }));
+  };
+
+  const handleAddGoal = (goal: Omit<LearningGoal, 'id' | 'current' | 'isCompleted'>) => {
+    if (!state.activeProfileId) return;
+    const newGoal: LearningGoal = { 
+      ...goal, 
+      id: Math.random().toString(36).substr(2, 9),
+      current: 0,
+      isCompleted: false
+    };
+    setState(prev => ({
+      ...prev,
+      profiles: {
+        ...prev.profiles,
+        [prev.activeProfileId!]: {
+          ...prev.profiles[prev.activeProfileId!],
+          goals: [...prev.profiles[prev.activeProfileId!].goals, newGoal]
+        }
+      }
+    }));
+  };
+
+  const handleDeleteGoal = (goalId: string) => {
+    if (!state.activeProfileId) return;
+    setState(prev => ({
+      ...prev,
+      profiles: {
+        ...prev.profiles,
+        [prev.activeProfileId!]: {
+          ...prev.profiles[prev.activeProfileId!],
+          goals: prev.profiles[prev.activeProfileId!].goals.filter(g => g.id !== goalId)
+        }
+      }
+    }));
   };
 
   const handleAddTask = (title: string) => {
@@ -473,7 +686,6 @@ export default function App() {
       } else if (skillId === 's3') { // Light of Wisdom
         newPet.xp += 100;
         setMessage(`使用了技能【${skill.name}】！获得了大量经验值！`);
-        // Check for level up here too if needed, but keeping it simple for now
       }
 
       return {
@@ -491,7 +703,7 @@ export default function App() {
     }, 1500);
   };
 
-  const handleInteraction = (type: 'feeding' | 'cleaning' | 'playing' | 'studying' | 'sleeping' | 'adventure' | 'meditation' | 'magic') => {
+  const handleInteraction = (type: 'feeding' | 'cleaning' | 'playing' | 'studying' | 'sleeping' | 'adventure' | 'meditation' | 'magic' | 'training') => {
     if (!state.activeProfileId || !activeProfile) return;
     const costs = { 
       feeding: 10, 
@@ -499,6 +711,7 @@ export default function App() {
       playing: 15, 
       studying: 20, 
       sleeping: 0,
+      training: 40,
       adventure: 30,
       meditation: 25,
       magic: 50
@@ -514,6 +727,7 @@ export default function App() {
       type === 'sleeping' ? 'sleep' :
       type === 'adventure' ? 'play' :
       type === 'meditation' ? 'sleep' :
+      type === 'training' ? 'play' :
       'evolution'
     );
     setState(prev => {
@@ -542,6 +756,11 @@ export default function App() {
         newPet.energy = Math.min(100, newPet.energy + 60);
         newPet.happiness = Math.min(100, newPet.happiness + 5);
         setMessage(`呼呼...做个好梦...`);
+      } else if (type === 'training') {
+        newPet.xp += 120;
+        newPet.energy = Math.max(0, newPet.energy - 30);
+        newPet.happiness = Math.min(100, newPet.happiness + 15);
+        setMessage(`努力训练中！感觉充满了力量！XP大幅提升！💪`);
       } else if (type === 'adventure') {
         newPet.xp += 80;
         newPet.points += 15;
@@ -709,26 +928,46 @@ export default function App() {
             >
               {isMuted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
             </button>
-            <div className="flex bg-[#EFEBE9] p-2 rounded-[2.5rem] border-4 border-[#D7CCC8]">
+            <div className="flex bg-[#EFEBE9] p-2 rounded-[2.5rem] border-4 border-[#D7CCC8] overflow-x-auto no-scrollbar max-w-[60vw]">
               <button
                 onClick={() => setActiveTab('pet')}
                 className={cn(
-                  "flex items-center gap-2 px-6 py-3 rounded-[2rem] text-lg font-black transition-all",
+                  "flex items-center gap-2 px-6 py-3 rounded-[2rem] text-lg font-black transition-all whitespace-nowrap",
                   activeTab === 'pet' ? "bg-[#FFCC80] text-[#5D4037] shadow-md border-2 border-[#5D4037]" : "text-[#A1887F] hover:text-[#5D4037]"
                 )}
               >
                 <Layout className="w-5 h-5" />
-                我的伙伴
+                伙伴
+              </button>
+              <button
+                onClick={() => setActiveTab('goals')}
+                className={cn(
+                  "flex items-center gap-2 px-6 py-3 rounded-[2rem] text-lg font-black transition-all whitespace-nowrap",
+                  activeTab === 'goals' ? "bg-[#4FC3F7] text-[#5D4037] shadow-md border-2 border-[#5D4037]" : "text-[#A1887F] hover:text-[#5D4037]"
+                )}
+              >
+                <TargetIcon className="w-5 h-5" />
+                目标
+              </button>
+              <button
+                onClick={() => setActiveTab('shop')}
+                className={cn(
+                  "flex items-center gap-2 px-6 py-3 rounded-[2rem] text-lg font-black transition-all whitespace-nowrap",
+                  activeTab === 'shop' ? "bg-[#FF7043] text-white shadow-md border-2 border-[#5D4037]" : "text-[#A1887F] hover:text-[#5D4037]"
+                )}
+              >
+                <ShoppingBag className="w-5 h-5" />
+                商城
               </button>
               <button
                 onClick={() => setActiveTab('leaderboard')}
                 className={cn(
-                  "flex items-center gap-2 px-6 py-3 rounded-[2rem] text-lg font-black transition-all",
+                  "flex items-center gap-2 px-6 py-3 rounded-[2rem] text-lg font-black transition-all whitespace-nowrap",
                   activeTab === 'leaderboard' ? "bg-[#FFCC80] text-[#5D4037] shadow-md border-2 border-[#5D4037]" : "text-[#A1887F] hover:text-[#5D4037]"
                 )}
               >
                 <Users className="w-5 h-5" />
-                光荣榜
+                榜单
               </button>
             </div>
             <button 
@@ -827,6 +1066,21 @@ export default function App() {
               </div>
             </section>
           </main>
+        ) : activeTab === 'shop' && activeProfile ? (
+          <Shop 
+            items={activeProfile.shopItems} 
+            points={activeProfile.pet.points} 
+            inventory={activeProfile.pet.inventory}
+            onPurchase={handlePurchase}
+            onAddItem={handleAddShopItem}
+            onDeleteItem={handleDeleteShopItem}
+          />
+        ) : activeTab === 'goals' && activeProfile ? (
+          <LearningGoals 
+            goals={activeProfile.goals} 
+            onAddGoal={handleAddGoal}
+            onDeleteGoal={handleDeleteGoal}
+          />
         ) : (
           <main className="flex flex-col items-center">
             <Leaderboard entries={leaderboardEntries} />

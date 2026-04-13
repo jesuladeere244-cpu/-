@@ -29,6 +29,13 @@ export const PetSelection: React.FC<PetSelectionProps> = ({ onSelect }) => {
     { id: 'fox', name: '灵狐', description: '机智过人，优雅的化身', color: 'bg-[#FFF3E0]', border: 'border-[#E65100]', icon: '🦊' },
     { id: 'penguin', name: '企鹅仔', description: '摇摇晃晃，极地小绅士', color: 'bg-[#ECEFF1]', border: 'border-[#263238]', icon: '🐧' },
     { id: 'lion', name: '小狮子', description: '森林之王，自信满满', color: 'bg-[#FFF9C4]', border: 'border-[#FBC02D]', icon: '🦁' },
+    { id: 'bulbasaur', name: '妙蛙种子', description: '草系宝可梦，背上的种子会发芽', color: 'bg-[#E0F2F1]', border: 'border-[#4DB6AC]', icon: '🍃' },
+    { id: 'charmander', name: '小火龙', description: '火系宝可梦，尾巴上的火焰是生命力', color: 'bg-[#FFF3E0]', border: 'border-[#FFB74D]', icon: '🔥' },
+    { id: 'squirtle', name: '杰尼龟', description: '水系宝可梦，坚硬的甲壳是最好的防御', color: 'bg-[#E3F2FD]', border: 'border-[#64B5F6]', icon: '💧' },
+    { id: 'pikachu', name: '皮卡丘', description: '电系宝可梦，脸颊上有电力袋', color: 'bg-[#FFFDE7]', border: 'border-[#FFF176]', icon: '⚡' },
+    { id: 'meowth', name: '喵喵', description: '喜欢闪亮的东西，额头上有金币', color: 'bg-[#FAFAFA]', border: 'border-[#BDBDBD]', icon: '💰' },
+    { id: 'eevee', name: '伊布', description: '拥有无限进化的可能', color: 'bg-[#EFEBE9]', border: 'border-[#A1887F]', icon: '🦊' },
+    { id: 'jigglypuff', name: '胖丁', description: '歌声动听，能让人陷入沉睡', color: 'bg-[#FCE4EC]', border: 'border-[#F06292]', icon: '🎵' },
   ];
 
   const handleRoll = () => {

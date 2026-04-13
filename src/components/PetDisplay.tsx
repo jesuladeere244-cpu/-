@@ -111,7 +111,26 @@ export const PetDisplay: React.FC<PetDisplayProps> = ({
       radius: 'rounded-[48%_48%_45%_45%/55%_55%_45%_45%]',
       border: 'border-yellow-400'
     },
+    bulbasaur: { color: 'bg-[#E0F2F1]', radius: 'rounded-full', border: 'border-[#4DB6AC]' },
+    charmander: { color: 'bg-[#FFF3E0]', radius: 'rounded-full', border: 'border-[#FFB74D]' },
+    squirtle: { color: 'bg-[#E3F2FD]', radius: 'rounded-full', border: 'border-[#64B5F6]' },
+    pikachu: { color: 'bg-[#FFFDE7]', radius: 'rounded-full', border: 'border-[#FFF176]' },
+    meowth: { color: 'bg-[#FAFAFA]', radius: 'rounded-full', border: 'border-[#BDBDBD]' },
+    eevee: { color: 'bg-[#EFEBE9]', radius: 'rounded-full', border: 'border-[#A1887F]' },
+    jigglypuff: { color: 'bg-[#FCE4EC]', radius: 'rounded-full', border: 'border-[#F06292]' },
   };
+
+  const pokemonIds: Record<string, number> = {
+    bulbasaur: 1,
+    charmander: 4,
+    squirtle: 7,
+    pikachu: 25,
+    meowth: 52,
+    eevee: 133,
+    jigglypuff: 39
+  };
+
+  const isPokemon = species in pokemonIds;
 
   const current = config[stage];
   const currentSpecies = speciesConfig[species];
@@ -392,11 +411,35 @@ export const PetDisplay: React.FC<PetDisplayProps> = ({
           currentSpecies.radius,
           currentSpecies.border,
           isHungry && "brightness-90 saturate-50",
-          isDirty && "opacity-80"
+          isDirty && "opacity-80",
+          isPokemon && "bg-white/40 border-dashed"
         )}
       >
-        {/* Glossy Overlay */}
-        <div className="absolute inset-2 bg-gradient-to-tr from-white/20 to-transparent rounded-[inherit] pointer-events-none" />
+        {isPokemon ? (
+          <div className="relative w-full h-full flex items-center justify-center p-4">
+            <img 
+              src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemonIds[species]}.png`}
+              alt={species}
+              className={cn(
+                "w-full h-full object-contain drop-shadow-xl",
+                activeAction === 'sleeping' && "grayscale brightness-50"
+              )}
+              referrerPolicy="no-referrer"
+            />
+            {/* Pokemon Specific Overlays */}
+            {activeAction === 'feeding' && (
+              <motion.div 
+                animate={{ scale: [1, 1.2, 1] }}
+                className="absolute -top-4 text-4xl"
+              >
+                😋
+              </motion.div>
+            )}
+          </div>
+        ) : (
+          <>
+            {/* Glossy Overlay */}
+            <div className="absolute inset-2 bg-gradient-to-tr from-white/20 to-transparent rounded-[inherit] pointer-events-none" />
 
         {/* Species Specific Features */}
         {species === 'dragon' && (
@@ -611,13 +654,15 @@ export const PetDisplay: React.FC<PetDisplayProps> = ({
           />
         </div>
 
-        {/* Thinking Indicator */}
-        {isThinking && (
-          <div className="absolute -right-6 -top-6 flex gap-1.5">
-            <motion.div animate={{ y: [0, -8, 0], scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 0.6 }} className="w-3 h-3 bg-white rounded-full shadow-sm" />
-            <motion.div animate={{ y: [0, -8, 0], scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.2 }} className="w-3 h-3 bg-white rounded-full shadow-sm" />
-            <motion.div animate={{ y: [0, -8, 0], scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.4 }} className="w-3 h-3 bg-white rounded-full shadow-sm" />
-          </div>
+            {/* Thinking Indicator */}
+            {isThinking && (
+              <div className="absolute -right-6 -top-6 flex gap-1.5">
+                <motion.div animate={{ y: [0, -8, 0], scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 0.6 }} className="w-3 h-3 bg-white rounded-full shadow-sm" />
+                <motion.div animate={{ y: [0, -8, 0], scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.2 }} className="w-3 h-3 bg-white rounded-full shadow-sm" />
+                <motion.div animate={{ y: [0, -8, 0], scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.4 }} className="w-3 h-3 bg-white rounded-full shadow-sm" />
+              </div>
+            )}
+          </>
         )}
       </motion.div>
 

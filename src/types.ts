@@ -6,7 +6,7 @@ export interface Task {
   createdAt: number;
 }
 
-export type PetSpecies = 'slime' | 'dragon' | 'cat' | 'robot' | 'rabbit' | 'panda' | 'frog' | 'pig' | 'tiger' | 'elephant' | 'dinosaur' | 'fox' | 'penguin' | 'lion';
+export type PetSpecies = 'slime' | 'dragon' | 'cat' | 'robot' | 'rabbit' | 'panda' | 'frog' | 'pig' | 'tiger' | 'elephant' | 'dinosaur' | 'fox' | 'penguin' | 'lion' | 'bulbasaur' | 'charmander' | 'squirtle' | 'pikachu' | 'meowth' | 'eevee' | 'jigglypuff';
 
 export interface PetSkill {
   id: string;
@@ -17,6 +17,25 @@ export interface PetSkill {
   unlocked: boolean;
   cooldown?: number; // in seconds
   lastUsed?: number;
+}
+
+export interface ShopItem {
+  id: string;
+  name: string;
+  price: number;
+  icon: string;
+  description: string;
+  category: 'pet' | 'personal';
+}
+
+export interface LearningGoal {
+  id: string;
+  title: string;
+  type: 'tasks' | 'level' | 'xp' | 'custom';
+  target: number;
+  current: number;
+  rewardPoints: number;
+  isCompleted: boolean;
 }
 
 export interface PetState {
@@ -35,6 +54,7 @@ export interface PetState {
   evolutionStage: 'baby' | 'child' | 'teen' | 'adult' | 'legendary' | 'mythical';
   isInitialized: boolean;
   skills: PetSkill[];
+  inventory: string[]; // IDs of purchased items
 }
 
 export interface AppState {
@@ -42,6 +62,8 @@ export interface AppState {
     [id: string]: {
       tasks: Task[];
       pet: PetState;
+      shopItems: ShopItem[];
+      goals: LearningGoal[];
     };
   };
   activeProfileId: string | null;
