@@ -42,12 +42,12 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ profiles, onSe
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
         {profiles.map((profile) => (
-          <motion.button
+          <motion.div
             key={profile.id}
             whileHover={{ scale: 1.05, rotate: 1 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => onSelect(profile.id)}
-            className="flex flex-col items-center gap-4 p-8 bg-[#FFF9F2] hover:bg-white border-4 border-[#D7CCC8] hover:border-[#FFAB91] rounded-[3rem] transition-all group text-center shadow-[8px_8px_0px_#D7CCC8] hover:shadow-[8px_8px_0px_#FFAB91] relative"
+            className="flex flex-col items-center gap-4 p-8 bg-[#FFF9F2] hover:bg-white border-4 border-[#D7CCC8] hover:border-[#FFAB91] rounded-[3rem] transition-all group text-center shadow-[8px_8px_0px_#D7CCC8] hover:shadow-[8px_8px_0px_#FFAB91] relative cursor-pointer"
           >
             <button
               onClick={(e) => {
@@ -72,7 +72,7 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ profiles, onSe
                 </p>
               </div>
             </div>
-          </motion.button>
+          </motion.div>
         ))}
 
         {profiles.length < 2 && (

@@ -11,7 +11,7 @@ import { InteractionPanel } from './components/InteractionPanel';
 import { Leaderboard } from './components/Leaderboard';
 import { ProfileSelector } from './components/ProfileSelector';
 import { Task, PetState, AppState, PetSpecies, ShopItem, LearningGoal } from './types';
-import { getPetEncouragement, getPetDailyGreeting } from './services/gemini';
+import { getPetEncouragement, getPetDailyGreeting, getPetChatResponse } from './services/gemini';
 import { Sparkles, Trophy, Edit2, Calendar, Layout, Users, LogOut, Volume2, VolumeX, ShoppingBag, Target as TargetIcon } from 'lucide-react';
 import { audioService } from './services/audioService';
 import { cn } from './lib/utils';
@@ -523,6 +523,34 @@ export default function App() {
     }));
   };
 
+  const handleDeductPoints = (amount: number, reason: string) => {
+    if (!state.activeProfileId || !activeProfile) return;
+    
+    audioService.play('click');
+    setState(prev => {
+      const p = prev.profiles[prev.activeProfileId!];
+      const newPoints = Math.max(0, p.pet.points - amount);
+      
+      return {
+        ...prev,
+        profiles: {
+          ...prev.profiles,
+          [prev.activeProfileId!]: {
+            ...p,
+            pet: {
+              ...p.pet,
+              points: newPoints,
+              happiness: Math.max(0, p.pet.happiness - 10) // Penalty also affects happiness
+            }
+          }
+        }
+      };
+    });
+
+    setMessage(`由于【${reason}】，扣除了 ${amount} 学习币。要继续努力哦！`);
+    setTimeout(() => setMessage(''), 5000);
+  };
+
   const handleAddTask = (title: string) => {
     if (!state.activeProfileId) return;
     const newTask: Task = {
@@ -701,6 +729,27 @@ export default function App() {
       setActiveAction(null);
       setTimeout(() => setMessage(''), 3000);
     }, 1500);
+  };
+
+  const handleResetPet = () => {
+    if (!activeProfile) return;
+    audioService.play('click');
+    setShowPetSelection(true);
+  };
+
+  const handleChat = async (userMessage: string) => {
+    if (!activeProfile || isThinking) return;
+
+    setIsThinking(true);
+    const response = await getPetChatResponse(
+      activeProfile.pet.name,
+      activeProfile.pet.species,
+      activeProfile.pet.level,
+      userMessage
+    );
+    setMessage(response);
+    setIsThinking(false);
+    setTimeout(() => setMessage(''), 6000);
   };
 
   const handleInteraction = (type: 'feeding' | 'cleaning' | 'playing' | 'studying' | 'sleeping' | 'adventure' | 'meditation' | 'magic' | 'training') => {
@@ -1025,7 +1074,9 @@ export default function App() {
               <InteractionPanel 
                 points={activeProfile.pet.points} 
                 level={activeProfile.pet.level}
-                onAction={handleInteraction} 
+                onAction={handleInteraction}
+                onChat={handleChat}
+                onResetPet={handleResetPet}
                 disabled={!!activeAction} 
               />
 
@@ -1080,6 +1131,7 @@ export default function App() {
             goals={activeProfile.goals} 
             onAddGoal={handleAddGoal}
             onDeleteGoal={handleDeleteGoal}
+            onDeductPoints={handleDeductPoints}
           />
         ) : (
           <main className="flex flex-col items-center">

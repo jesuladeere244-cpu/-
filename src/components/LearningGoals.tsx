@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Target, CheckCircle2, Trophy, Star, TrendingUp, Settings2, Plus, Trash2, Coins } from 'lucide-react';
+import { Target, CheckCircle2, Trophy, Star, TrendingUp, Settings2, Plus, Trash2, Coins, AlertTriangle, Minus } from 'lucide-react';
 import { LearningGoal } from '../types';
 import { cn } from '../lib/utils';
 
@@ -8,11 +8,13 @@ interface LearningGoalsProps {
   goals: LearningGoal[];
   onAddGoal: (goal: Omit<LearningGoal, 'id' | 'current' | 'isCompleted'>) => void;
   onDeleteGoal: (goalId: string) => void;
+  onDeductPoints: (amount: number, reason: string) => void;
 }
 
-export const LearningGoals: React.FC<LearningGoalsProps> = ({ goals, onAddGoal, onDeleteGoal }) => {
+export const LearningGoals: React.FC<LearningGoalsProps> = ({ goals, onAddGoal, onDeleteGoal, onDeductPoints }) => {
   const [isParentMode, setIsParentMode] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [showPenaltyForm, setShowPenaltyForm] = useState(false);
   const [newGoal, setNewGoal] = useState<Omit<LearningGoal, 'id' | 'current' | 'isCompleted'>>({
     title: '',
     type: 'tasks',
@@ -20,12 +22,23 @@ export const LearningGoals: React.FC<LearningGoalsProps> = ({ goals, onAddGoal, 
     rewardPoints: 100
   });
 
+  const [penalty, setPenalty] = useState({ amount: 10, reason: '' });
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (newGoal.title.trim()) {
       onAddGoal(newGoal);
       setNewGoal({ title: '', type: 'tasks', target: 10, rewardPoints: 100 });
       setShowAddForm(false);
+    }
+  };
+
+  const handlePenaltySubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (penalty.amount > 0 && penalty.reason.trim()) {
+      onDeductPoints(penalty.amount, penalty.reason);
+      setPenalty({ amount: 10, reason: '' });
+      setShowPenaltyForm(false);
     }
   };
 
@@ -58,80 +71,139 @@ export const LearningGoals: React.FC<LearningGoalsProps> = ({ goals, onAddGoal, 
 
       <AnimatePresence>
         {isParentMode && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="mb-12 p-8 bg-[#E1F5FE] rounded-[3rem] border-4 border-[#B3E5FC] relative overflow-hidden"
-          >
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <Plus className="w-6 h-6 text-[#0288D1]" />
-                <h3 className="text-2xl font-black text-[#5D4037] font-hand">添加新目标</h3>
+          <div className="space-y-6 mb-12">
+            {/* Add Goal Form */}
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="p-8 bg-[#E1F5FE] rounded-[3rem] border-4 border-[#B3E5FC] relative overflow-hidden"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <Plus className="w-6 h-6 text-[#0288D1]" />
+                  <h3 className="text-2xl font-black text-[#5D4037] font-hand">添加新目标</h3>
+                </div>
+                <button onClick={() => setShowAddForm(!showAddForm)} className="text-[#0288D1] font-black hover:underline">
+                  {showAddForm ? "取消" : "立即添加"}
+                </button>
               </div>
-              <button onClick={() => setShowAddForm(!showAddForm)} className="text-[#0288D1] font-black hover:underline">
-                {showAddForm ? "取消" : "立即添加"}
-              </button>
-            </div>
 
-            {showAddForm && (
-              <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-black text-[#8D6E63] uppercase mb-1">目标标题</label>
-                    <input
-                      required
-                      type="text"
-                      value={newGoal.title}
-                      onChange={e => setNewGoal({ ...newGoal, title: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl border-2 border-[#D7CCC8] focus:border-[#4FC3F7] outline-none font-bold"
-                      placeholder="例如：连续学习7天"
-                    />
+              {showAddForm && (
+                <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-black text-[#8D6E63] uppercase mb-1">目标标题</label>
+                      <input
+                        required
+                        type="text"
+                        value={newGoal.title}
+                        onChange={e => setNewGoal({ ...newGoal, title: e.target.value })}
+                        className="w-full px-4 py-3 rounded-xl border-2 border-[#D7CCC8] focus:border-[#4FC3F7] outline-none font-bold"
+                        placeholder="例如：连续学习7天"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-black text-[#8D6E63] uppercase mb-1">目标类型</label>
+                      <select
+                        value={newGoal.type}
+                        onChange={e => setNewGoal({ ...newGoal, type: e.target.value as any })}
+                        className="w-full px-4 py-3 rounded-xl border-2 border-[#D7CCC8] focus:border-[#4FC3F7] outline-none font-bold"
+                      >
+                        <option value="tasks">完成任务数</option>
+                        <option value="level">达到等级</option>
+                        <option value="xp">积累经验值</option>
+                        <option value="custom">自定义目标</option>
+                      </select>
+                    </div>
                   </div>
-                  <div>
-                    <label className="block text-xs font-black text-[#8D6E63] uppercase mb-1">目标类型</label>
-                    <select
-                      value={newGoal.type}
-                      onChange={e => setNewGoal({ ...newGoal, type: e.target.value as any })}
-                      className="w-full px-4 py-3 rounded-xl border-2 border-[#D7CCC8] focus:border-[#4FC3F7] outline-none font-bold"
-                    >
-                      <option value="tasks">完成任务数</option>
-                      <option value="level">达到等级</option>
-                      <option value="xp">积累经验值</option>
-                      <option value="custom">自定义目标</option>
-                    </select>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-black text-[#8D6E63] uppercase mb-1">目标数值</label>
+                      <input
+                        required
+                        type="number"
+                        value={newGoal.target}
+                        onChange={e => setNewGoal({ ...newGoal, target: parseInt(e.target.value) })}
+                        className="w-full px-4 py-3 rounded-xl border-2 border-[#D7CCC8] focus:border-[#4FC3F7] outline-none font-bold"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-black text-[#8D6E63] uppercase mb-1">奖励学习币</label>
+                      <input
+                        required
+                        type="number"
+                        value={newGoal.rewardPoints}
+                        onChange={e => setNewGoal({ ...newGoal, rewardPoints: parseInt(e.target.value) })}
+                        className="w-full px-4 py-3 rounded-xl border-2 border-[#D7CCC8] focus:border-[#4FC3F7] outline-none font-bold"
+                      />
+                    </div>
                   </div>
+                  <div className="md:col-span-2">
+                    <button type="submit" className="w-full py-4 bg-[#4FC3F7] text-white rounded-2xl font-black border-b-4 border-[#0288D1] hover:translate-y-[-2px] active:translate-y-[2px] active:border-b-0 transition-all">
+                      确认添加目标
+                    </button>
+                  </div>
+                </form>
+              )}
+            </motion.div>
+
+            {/* Penalty Form */}
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="p-8 bg-[#FFEBEE] rounded-[3rem] border-4 border-[#FFCDD2] relative overflow-hidden"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <AlertTriangle className="w-6 h-6 text-[#E53935]" />
+                  <h3 className="text-2xl font-black text-[#5D4037] font-hand">扣除积分 (惩罚)</h3>
                 </div>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-black text-[#8D6E63] uppercase mb-1">目标数值</label>
-                    <input
-                      required
-                      type="number"
-                      value={newGoal.target}
-                      onChange={e => setNewGoal({ ...newGoal, target: parseInt(e.target.value) })}
-                      className="w-full px-4 py-3 rounded-xl border-2 border-[#D7CCC8] focus:border-[#4FC3F7] outline-none font-bold"
-                    />
+                <button onClick={() => setShowPenaltyForm(!showPenaltyForm)} className="text-[#E53935] font-black hover:underline">
+                  {showPenaltyForm ? "取消" : "立即扣除"}
+                </button>
+              </div>
+
+              {showPenaltyForm && (
+                <form onSubmit={handlePenaltySubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-black text-[#8D6E63] uppercase mb-1">扣除原因</label>
+                      <input
+                        required
+                        type="text"
+                        value={penalty.reason}
+                        onChange={e => setPenalty({ ...penalty, reason: e.target.value })}
+                        className="w-full px-4 py-3 rounded-xl border-2 border-[#D7CCC8] focus:border-[#E53935] outline-none font-bold"
+                        placeholder="例如：未按时完成作业"
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <label className="block text-xs font-black text-[#8D6E63] uppercase mb-1">奖励学习币</label>
-                    <input
-                      required
-                      type="number"
-                      value={newGoal.rewardPoints}
-                      onChange={e => setNewGoal({ ...newGoal, rewardPoints: parseInt(e.target.value) })}
-                      className="w-full px-4 py-3 rounded-xl border-2 border-[#D7CCC8] focus:border-[#4FC3F7] outline-none font-bold"
-                    />
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-black text-[#8D6E63] uppercase mb-1">扣除数量</label>
+                      <div className="relative">
+                        <Minus className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#E53935]" />
+                        <input
+                          required
+                          type="number"
+                          value={penalty.amount}
+                          onChange={e => setPenalty({ ...penalty, amount: parseInt(e.target.value) })}
+                          className="w-full pl-10 pr-4 py-3 rounded-xl border-2 border-[#D7CCC8] focus:border-[#E53935] outline-none font-bold text-[#E53935]"
+                        />
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <div className="md:col-span-2">
-                  <button type="submit" className="w-full py-4 bg-[#4FC3F7] text-white rounded-2xl font-black border-b-4 border-[#0288D1] hover:translate-y-[-2px] active:translate-y-[2px] active:border-b-0 transition-all">
-                    确认添加目标
-                  </button>
-                </div>
-              </form>
-            )}
-          </motion.div>
+                  <div className="md:col-span-2">
+                    <button type="submit" className="w-full py-4 bg-[#E53935] text-white rounded-2xl font-black border-b-4 border-[#B71C1C] hover:translate-y-[-2px] active:translate-y-[2px] active:border-b-0 transition-all">
+                      确认扣除积分
+                    </button>
+                  </div>
+                </form>
+              )}
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
 
