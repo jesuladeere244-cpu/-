@@ -551,6 +551,48 @@ export default function App() {
     setTimeout(() => setMessage(''), 5000);
   };
 
+  const handleUseItem = (itemId: string) => {
+    if (!state.activeProfileId || !activeProfile) return;
+
+    const item = activeProfile.shopItems.find(i => i.id === itemId);
+    if (!item) return;
+
+    audioService.play('magic');
+    confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 }, colors: ['#FF7043', '#FFD54F'] });
+
+    setState(prev => {
+      const p = prev.profiles[prev.activeProfileId!];
+      const itemIndex = p.pet.inventory.indexOf(itemId);
+      if (itemIndex === -1) return prev;
+
+      const newInventory = [...p.pet.inventory];
+      newInventory.splice(itemIndex, 1);
+
+      const newPet = { ...p.pet, inventory: newInventory };
+
+      // Apply effects based on item category or specific ID
+      if (item.category === 'pet') {
+        newPet.happiness = Math.min(100, newPet.happiness + 30);
+        newPet.energy = Math.min(100, newPet.energy + 20);
+        newPet.xp += 50;
+      } else {
+        // Personal items might give a big happiness boost to the pet because the kid is happy
+        newPet.happiness = Math.min(100, newPet.happiness + 50);
+      }
+
+      return {
+        ...prev,
+        profiles: {
+          ...prev.profiles,
+          [prev.activeProfileId!]: { ...p, pet: newPet }
+        }
+      };
+    });
+
+    setMessage(`你使用了【${item.name}】！太棒了，感觉充满了力量！✨`);
+    setTimeout(() => setMessage(''), 4000);
+  };
+
   const handleAddTask = (title: string) => {
     if (!state.activeProfileId) return;
     const newTask: Task = {
@@ -1123,6 +1165,7 @@ export default function App() {
             points={activeProfile.pet.points} 
             inventory={activeProfile.pet.inventory}
             onPurchase={handlePurchase}
+            onUseItem={handleUseItem}
             onAddItem={handleAddShopItem}
             onDeleteItem={handleDeleteShopItem}
           />

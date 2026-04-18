@@ -9,6 +9,7 @@ interface ShopProps {
   points: number;
   inventory: string[];
   onPurchase: (itemId: string) => void;
+  onUseItem: (itemId: string) => void;
   onAddItem: (item: Omit<ShopItem, 'id'>) => void;
   onDeleteItem: (itemId: string) => void;
 }
@@ -70,7 +71,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, isOwned, canAfford, isParentM
   );
 };
 
-export const Shop: React.FC<ShopProps> = ({ items, points, inventory, onPurchase, onAddItem, onDeleteItem }) => {
+export const Shop: React.FC<ShopProps> = ({ items, points, inventory, onPurchase, onUseItem, onAddItem, onDeleteItem }) => {
   const [isParentMode, setIsParentMode] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [newItem, setNewItem] = useState<Omit<ShopItem, 'id'>>({
@@ -254,14 +255,29 @@ export const Shop: React.FC<ShopProps> = ({ items, points, inventory, onPurchase
             <h3 className="text-2xl font-black text-[#5D4037] font-hand">我的背包</h3>
           </div>
           <div className="flex flex-wrap gap-4">
-            {inventory.map((itemId) => {
+            {inventory.map((itemId, index) => {
               const item = items.find(i => i.id === itemId);
               if (!item) return null;
               return (
-                <div key={itemId} className="bg-white p-4 rounded-2xl border-2 border-[#D7CCC8] flex items-center gap-3">
-                  <span className="text-2xl">{item.icon}</span>
-                  <span className="font-black text-[#5D4037]">{item.name}</span>
-                </div>
+                <motion.div 
+                  key={`${itemId}-${index}`} 
+                  whileHover={{ scale: 1.02 }}
+                  className="bg-white p-4 rounded-3xl border-4 border-[#D7CCC8] flex items-center justify-between gap-6 shadow-sm hover:border-[#FF7043] transition-all"
+                >
+                  <div className="flex items-center gap-4">
+                    <span className="text-4xl filter drop-shadow-sm">{item.icon}</span>
+                    <div className="flex flex-col">
+                      <span className="font-black text-[#5D4037] text-lg">{item.name}</span>
+                      <span className="text-[10px] font-bold text-[#A1887F]">{item.category === 'pet' ? '宠物道具' : '家长奖励'}</span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => onUseItem(itemId)}
+                    className="px-6 py-2 bg-[#FF7043] text-white rounded-full font-black text-sm border-b-4 border-[#D84315] hover:translate-y-[-2px] active:translate-y-[2px] active:border-b-0 transition-all shadow-md"
+                  >
+                    立即使用
+                  </button>
+                </motion.div>
               );
             })}
           </div>
