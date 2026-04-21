@@ -81,48 +81,53 @@ const MOCK_LEADERBOARD = [
 
 export default function App() {
   const [state, setState] = useState<AppState>(() => {
-    const saved = localStorage.getItem('smarty_pet_state_v2');
-    if (!saved) return INITIAL_STATE;
-    
-    const parsed = JSON.parse(saved) as AppState;
-    // Migration: ensure all pets have skills, inventory, shopItems, and goals
-    Object.keys(parsed.profiles).forEach(id => {
-      const profile = parsed.profiles[id];
-      if (!profile.pet.skills) {
-        profile.pet.skills = DEFAULT_SKILLS.map(s => ({
-          ...s,
-          unlocked: profile.pet.level >= s.minLevel
-        }));
-      }
-      if (!profile.pet.inventory) {
-        profile.pet.inventory = [];
-      }
-      if (!profile.shopItems) {
-        profile.shopItems = DEFAULT_SHOP_ITEMS;
-      } else {
-        // Ensure category exists
-        profile.shopItems = profile.shopItems.map(item => ({
-          ...item,
-          category: item.category || 'pet'
-        }));
-      }
-      if (!profile.goals) {
-        profile.goals = DEFAULT_GOALS;
-      } else {
-        // Ensure rewardPoints exists
-        profile.goals = profile.goals.map(goal => ({
-          ...goal,
-          rewardPoints: goal.rewardPoints || 50
-        }));
-      }
-      if (!profile.pet.garden) {
-        profile.pet.garden = {
-            unlocked: profile.pet.level >= 30,
-            plants: []
-        };
-      }
-    });
-    return parsed;
+    try {
+      const saved = localStorage.getItem('smarty_pet_state_v2');
+      if (!saved) return INITIAL_STATE;
+      
+      const parsed = JSON.parse(saved) as AppState;
+      // Migration: ensure all pets have skills, inventory, shopItems, and goals
+      Object.keys(parsed.profiles).forEach(id => {
+        const profile = parsed.profiles[id];
+        if (!profile.pet.skills) {
+          profile.pet.skills = DEFAULT_SKILLS.map(s => ({
+            ...s,
+            unlocked: profile.pet.level >= s.minLevel
+          }));
+        }
+        if (!profile.pet.inventory) {
+          profile.pet.inventory = [];
+        }
+        if (!profile.shopItems) {
+          profile.shopItems = DEFAULT_SHOP_ITEMS;
+        } else {
+          // Ensure category exists
+          profile.shopItems = profile.shopItems.map(item => ({
+            ...item,
+            category: item.category || 'pet'
+          }));
+        }
+        if (!profile.goals) {
+          profile.goals = DEFAULT_GOALS;
+        } else {
+          // Ensure rewardPoints exists
+          profile.goals = profile.goals.map(goal => ({
+            ...goal,
+            rewardPoints: goal.rewardPoints || 50
+          }));
+        }
+        if (!profile.pet.garden) {
+          profile.pet.garden = {
+              unlocked: profile.pet.level >= 30,
+              plants: []
+          };
+        }
+      });
+      return parsed;
+    } catch (error) {
+      console.error("Error loading saved state:", error);
+      return INITIAL_STATE;
+    }
   });
 
   const [message, setMessage] = useState<string>('');
