@@ -25,7 +25,25 @@ export interface ShopItem {
   price: number;
   icon: string;
   description: string;
-  category: 'pet' | 'personal';
+  category: 'pet' | 'personal' | 'garden';
+}
+
+export interface Plant {
+  id: string;
+  seedId: string;
+  name: string;
+  icon: string;
+  stage: 'seed' | 'sprout' | 'growing' | 'mature';
+  growth: number; // 0-100
+  water: number; // 0-100
+  sun: number; // 0-100
+  plantedAt: number;
+  lastTendedAt: number;
+}
+
+export interface GardenState {
+  unlocked: boolean;
+  plants: Plant[];
 }
 
 export interface LearningGoal {
@@ -51,10 +69,11 @@ export interface PetState {
   lastFed: number;
   lastCheckIn?: number;
   streak: number;
-  evolutionStage: 'baby' | 'child' | 'teen' | 'adult' | 'legendary' | 'mythical';
+  evolutionStage: 'baby' | 'child' | 'teen' | 'adult' | 'legendary' | 'mythical' | 'celestial' | 'sanctuary' | 'eternal';
   isInitialized: boolean;
   skills: PetSkill[];
   inventory: string[]; // IDs of purchased items
+  garden?: GardenState;
 }
 
 export interface AppState {

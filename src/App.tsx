@@ -9,10 +9,11 @@ import { LearningGoals } from './components/LearningGoals';
 import { PetSelection } from './components/PetSelection';
 import { InteractionPanel } from './components/InteractionPanel';
 import { Leaderboard } from './components/Leaderboard';
+import { Garden } from './components/Garden';
 import { ProfileSelector } from './components/ProfileSelector';
-import { Task, PetState, AppState, PetSpecies, ShopItem, LearningGoal } from './types';
+import { Task, PetState, AppState, PetSpecies, ShopItem, LearningGoal, Plant } from './types';
 import { getPetEncouragement, getPetDailyGreeting, getPetChatResponse } from './services/gemini';
-import { Sparkles, Trophy, Edit2, Calendar, Layout, Users, LogOut, Volume2, VolumeX, ShoppingBag, Target as TargetIcon } from 'lucide-react';
+import { Sparkles, Trophy, Edit2, Calendar, Layout, Users, LogOut, Volume2, VolumeX, ShoppingBag, Target as TargetIcon, Trees } from 'lucide-react';
 import { audioService } from './services/audioService';
 import { cn } from './lib/utils';
 
@@ -32,6 +33,10 @@ const DEFAULT_SHOP_ITEMS: ShopItem[] = [
   { id: 'i5', name: '神秘宝箱', price: 1000, icon: '📦', description: '里面藏着不可思议的惊喜...', category: 'pet' },
   { id: 'p1', name: '看一集动画片', price: 150, icon: '📺', description: '家长奖励：可以看一集最喜欢的动画片。', category: 'personal' },
   { id: 'p2', name: '周末去游乐园', price: 2000, icon: '🎡', description: '家长奖励：周末全家一起去游乐园玩！', category: 'personal' },
+  { id: 's_rose', name: '红玫瑰种子', price: 100, icon: '🌹', description: '虽然普通但极具魅力的花朵。', category: 'garden' },
+  { id: 's_tulip', name: '郁金香种子', price: 150, icon: '🌷', description: '色彩斑斓的郁金香。', category: 'garden' },
+  { id: 's_sunflower', name: '向日葵种子', price: 200, icon: '🌻', description: '它总是向着希望。', category: 'garden' },
+  { id: 's_cactus', name: '仙人掌种子', price: 300, icon: '🌵', description: '生命力顽强的沙漠之星。', category: 'garden' },
 ];
 
 const DEFAULT_GOALS: LearningGoal[] = [
@@ -57,6 +62,10 @@ const INITIAL_PET_STATE = (name: string = "", species: PetSpecies = 'slime'): Pe
   isInitialized: !!name,
   skills: DEFAULT_SKILLS,
   inventory: [],
+  garden: {
+    unlocked: false,
+    plants: []
+  }
 });
 
 const INITIAL_STATE: AppState = {
@@ -106,6 +115,12 @@ export default function App() {
           rewardPoints: goal.rewardPoints || 50
         }));
       }
+      if (!profile.pet.garden) {
+        profile.pet.garden = {
+            unlocked: profile.pet.level >= 30,
+            plants: []
+        };
+      }
     });
     return parsed;
   });
@@ -113,8 +128,8 @@ export default function App() {
   const [message, setMessage] = useState<string>('');
   const [isThinking, setIsThinking] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
-  const [activeAction, setActiveAction] = useState<'feeding' | 'cleaning' | 'playing' | 'studying' | 'sleeping' | 'adventure' | 'meditation' | 'magic' | 'skill' | 'training' | null>(null);
-  const [activeTab, setActiveTab] = useState<'pet' | 'leaderboard' | 'shop' | 'goals'>('pet');
+  const [activeAction, setActiveAction] = useState<'feeding' | 'cleaning' | 'playing' | 'studying' | 'sleeping' | 'adventure' | 'meditation' | 'magic' | 'skill' | 'training' | 'garden' | null>(null);
+  const [activeTab, setActiveTab] = useState<'pet' | 'leaderboard' | 'shop' | 'goals' | 'garden'>('pet');
   const [showPetSelection, setShowPetSelection] = useState(false);
   const [isEvolving, setIsEvolving] = useState(false);
   const [isMuted, setIsMuted] = useState(() => audioService.isMuted());
@@ -557,7 +572,7 @@ export default function App() {
     const item = activeProfile.shopItems.find(i => i.id === itemId);
     if (!item) return;
 
-    audioService.play('magic');
+    audioService.play('evolution');
     confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 }, colors: ['#FF7043', '#FFD54F'] });
 
     setState(prev => {
@@ -592,6 +607,199 @@ export default function App() {
     setMessage(`你使用了【${item.name}】！太棒了，感觉充满了力量！✨`);
     setTimeout(() => setMessage(''), 4000);
   };
+
+  const handlePlant = (seedId: string) => {
+    if (!state.activeProfileId || !activeProfile) return;
+    if (activeProfile.pet.points < 100) return;
+    
+    const seedMap: Record<string, {name: string, icon: string}> = {
+        'seed_rose': { name: '玫瑰', icon: '🌹' },
+        'seed_tulip': { name: '郁金香', icon: '🌷' },
+        'seed_sunflower': { name: '向日葵', icon: '🌻' },
+        'seed_cactus': { name: '仙人掌', icon: '🌵' }
+    };
+
+    const plantInfo = seedMap[seedId] || seedMap['seed_rose'];
+
+    const newPlant: Plant = {
+        id: Math.random().toString(36).substr(2, 9),
+        seedId: seedId,
+        name: plantInfo.name,
+        icon: plantInfo.icon,
+        stage: 'seed',
+        growth: 0,
+        water: 50,
+        sun: 50,
+        plantedAt: Date.now(),
+        lastTendedAt: Date.now()
+    };
+
+    setState(prev => {
+        const p = prev.profiles[prev.activeProfileId!];
+        const garden = p.pet.garden || { unlocked: true, plants: [] };
+        return {
+            ...prev,
+            profiles: {
+                ...prev.profiles,
+                [prev.activeProfileId!]: {
+                    ...p,
+                    pet: {
+                        ...p.pet,
+                        points: p.pet.points - 100,
+                        garden: {
+                            ...garden,
+                            plants: [...garden.plants, newPlant]
+                        }
+                    }
+                }
+            }
+        };
+    });
+    audioService.play('click');
+    setMessage(`在土壤中播下了 ${newPlant.name} 的种子！好好照顾它吧。`);
+  }
+
+  const handleWater = (id: string) => {
+    if (!state.activeProfileId || !activeProfile) return;
+    if (activeProfile.pet.points < 50) return;
+
+    setState(prev => {
+        const p = prev.profiles[prev.activeProfileId!];
+        const plants = p.pet.garden?.plants.map(pl => {
+            if (pl.id === id) {
+                const newGrowth = pl.growth + (pl.sun / 100) * 10 + 2;
+                let newStage = pl.stage;
+                if (newGrowth >= 100) newStage = 'mature';
+                else if (newGrowth >= 60) newStage = 'growing';
+                else if (newGrowth >= 30) newStage = 'sprout';
+
+                return {
+                    ...pl,
+                    water: Math.min(100, pl.water + 40),
+                    growth: Math.min(100, newGrowth),
+                    stage: newStage as any,
+                    lastTendedAt: Date.now()
+                };
+            }
+            return pl;
+        });
+
+        return {
+            ...prev,
+            profiles: {
+                ...prev.profiles,
+                [prev.activeProfileId!]: {
+                    ...p,
+                    pet: {
+                        ...p.pet,
+                        points: p.pet.points - 50,
+                        garden: { ...p.pet.garden!, plants: plants! }
+                    }
+                }
+            }
+        };
+    });
+    audioService.play('shower');
+    setMessage(`给植物浇了水，它看起来更有精神了！💧`);
+  }
+
+  const handleSun = (id: string) => {
+    if (!state.activeProfileId || !activeProfile) return;
+    if (activeProfile.pet.points < 50) return;
+
+    setState(prev => {
+        const p = prev.profiles[prev.activeProfileId!];
+        const plants = p.pet.garden?.plants.map(pl => {
+            if (pl.id === id) {
+                const newGrowth = pl.growth + (pl.water / 100) * 15 + 3;
+                let newStage = pl.stage;
+                if (newGrowth >= 100) newStage = 'mature';
+                else if (newGrowth >= 60) newStage = 'growing';
+                else if (newGrowth >= 30) newStage = 'sprout';
+
+                return {
+                    ...pl,
+                    sun: Math.min(100, pl.sun + 40),
+                    growth: Math.min(100, newGrowth),
+                    stage: newStage as any,
+                    lastTendedAt: Date.now()
+                };
+            }
+            return pl;
+        });
+
+        return {
+            ...prev,
+            profiles: {
+                ...prev.profiles,
+                [prev.activeProfileId!]: {
+                    ...p,
+                    pet: {
+                        ...p.pet,
+                        points: p.pet.points - 50,
+                        garden: { ...p.pet.garden!, plants: plants! }
+                    }
+                }
+            }
+        };
+    });
+    audioService.play('evolution');
+    setMessage(`温暖的阳光洒在植物上，生长速度变快了！☀️`);
+  }
+
+  const handleHarvest = (id: string) => {
+    if (!state.activeProfileId || !activeProfile) return;
+    const plant = activeProfile.pet.garden?.plants.find(p => p.id === id);
+    if (!plant || plant.growth < 100) return;
+
+    setState(prev => {
+        const p = prev.profiles[prev.activeProfileId!];
+        const newXp = p.pet.xp + 500;
+        const newPoints = p.pet.points + 200;
+        
+        return {
+            ...prev,
+            profiles: {
+                ...prev.profiles,
+                [prev.activeProfileId!]: {
+                    ...p,
+                    pet: {
+                        ...p.pet,
+                        xp: newXp,
+                        points: newPoints,
+                        garden: {
+                            ...p.pet.garden!,
+                            plants: p.pet.garden!.plants.filter(pl => pl.id !== id)
+                        }
+                    }
+                }
+            }
+        };
+    });
+    audioService.play('success');
+    confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
+    setMessage(`太棒了！收割了成熟的 ${plant.name}，获得了 500 XP 和 200 学习币！🎁`);
+  }
+
+  const handleClear = (id: string) => {
+    if (!state.activeProfileId || !activeProfile) return;
+    setState(prev => ({
+        ...prev,
+        profiles: {
+            ...prev.profiles,
+            [prev.activeProfileId!]: {
+                ...prev.profiles[prev.activeProfileId!],
+                pet: {
+                    ...prev.profiles[prev.activeProfileId!].pet,
+                    garden: {
+                        ...prev.profiles[prev.activeProfileId!].pet.garden!,
+                        plants: prev.profiles[prev.activeProfileId!].pet.garden!.plants.filter(pl => pl.id !== id)
+                    }
+                }
+            }
+        }
+    }));
+  }
 
   const handleAddTask = (title: string) => {
     if (!state.activeProfileId) return;
@@ -654,7 +862,10 @@ export default function App() {
           newXp -= newNextLevelXp;
           newNextLevelXp = Math.floor(newNextLevelXp * 1.2);
           
-          if (newLevel >= 40) newStage = 'mythical';
+          if (newLevel >= 100) newStage = 'eternal';
+          else if (newLevel >= 80) newStage = 'sanctuary';
+          else if (newLevel >= 60) newStage = 'celestial';
+          else if (newLevel >= 40) newStage = 'mythical';
           else if (newLevel >= 25) newStage = 'legendary';
           else if (newLevel >= 15) newStage = 'adult';
           else if (newLevel >= 10) newStage = 'teen';
@@ -1051,6 +1262,17 @@ export default function App() {
                 商城
               </button>
               <button
+                onClick={() => setActiveTab('garden')}
+                className={cn(
+                  "flex items-center gap-2 px-6 py-3 rounded-[2rem] text-lg font-black transition-all whitespace-nowrap",
+                  activeTab === 'garden' ? "bg-[#81C784] text-white shadow-md border-2 border-[#5D4037]" : "text-[#A1887F] hover:text-[#5D4037]",
+                  activeProfile?.pet.level! < 30 && "opacity-50"
+                )}
+              >
+                <Trees className="w-5 h-5" />
+                花园
+              </button>
+              <button
                 onClick={() => setActiveTab('leaderboard')}
                 className={cn(
                   "flex items-center gap-2 px-6 py-3 rounded-[2rem] text-lg font-black transition-all whitespace-nowrap",
@@ -1169,6 +1391,17 @@ export default function App() {
             onAddItem={handleAddShopItem}
             onDeleteItem={handleDeleteShopItem}
           />
+        ) : activeTab === 'garden' && activeProfile ? (
+            <Garden 
+              garden={activeProfile.pet.garden || { unlocked: activeProfile.pet.level >= 30, plants: [] }}
+              level={activeProfile.pet.level}
+              points={activeProfile.pet.points}
+              onPlant={handlePlant}
+              onWater={handleWater}
+              onSun={handleSun}
+              onHarvest={handleHarvest}
+              onClear={handleClear}
+            />
         ) : activeTab === 'goals' && activeProfile ? (
           <LearningGoals 
             goals={activeProfile.goals} 
