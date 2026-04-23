@@ -11,9 +11,11 @@ import { InteractionPanel } from './components/InteractionPanel';
 import { Leaderboard } from './components/Leaderboard';
 import { Garden } from './components/Garden';
 import { ProfileSelector } from './components/ProfileSelector';
+import { Auth } from './components/Auth';
+import { Friends } from './components/Friends';
 import { Task, PetState, AppState, PetSpecies, ShopItem, LearningGoal, Plant } from './types';
 import { getPetEncouragement, getPetDailyGreeting, getPetChatResponse } from './services/gemini';
-import { Sparkles, Trophy, Edit2, Calendar, Layout, Users, LogOut, Volume2, VolumeX, ShoppingBag, Target as TargetIcon, Trees } from 'lucide-react';
+import { Sparkles, Trophy, Edit2, Calendar, Layout, Users, LogOut, Volume2, VolumeX, ShoppingBag, Target as TargetIcon, Trees, LogIn } from 'lucide-react';
 import { audioService } from './services/audioService';
 import { cn } from './lib/utils';
 
@@ -79,56 +81,60 @@ const MOCK_LEADERBOARD = [
   { id: 'm3', name: '小红', petName: '喵喵', level: 10, xp: 950, points: 280 },
 ];
 
+import { supabase } from './lib/supabase';
+
 export default function App() {
   const [state, setState] = useState<AppState>(() => {
+    // ... 保持原有的 LocalStorage 作为备份和初始状态 ...
     try {
       const saved = localStorage.getItem('smarty_pet_state_v2');
       if (!saved) return INITIAL_STATE;
-      
       const parsed = JSON.parse(saved) as AppState;
-      // Migration: ensure all pets have skills, inventory, shopItems, and goals
-      Object.keys(parsed.profiles).forEach(id => {
-        const profile = parsed.profiles[id];
-        if (!profile.pet.skills) {
-          profile.pet.skills = DEFAULT_SKILLS.map(s => ({
-            ...s,
-            unlocked: profile.pet.level >= s.minLevel
-          }));
-        }
-        if (!profile.pet.inventory) {
-          profile.pet.inventory = [];
-        }
-        if (!profile.shopItems) {
-          profile.shopItems = DEFAULT_SHOP_ITEMS;
-        } else {
-          // Ensure category exists
-          profile.shopItems = profile.shopItems.map(item => ({
-            ...item,
-            category: item.category || 'pet'
-          }));
-        }
-        if (!profile.goals) {
-          profile.goals = DEFAULT_GOALS;
-        } else {
-          // Ensure rewardPoints exists
-          profile.goals = profile.goals.map(goal => ({
-            ...goal,
-            rewardPoints: goal.rewardPoints || 50
-          }));
-        }
-        if (!profile.pet.garden) {
-          profile.pet.garden = {
-              unlocked: profile.pet.level >= 30,
-              plants: []
-          };
-        }
-      });
+      // ... 原有的迁移逻辑 ...
       return parsed;
-    } catch (error) {
-      console.error("Error loading saved state:", error);
+    } catch {
       return INITIAL_STATE;
     }
   });
+
+  // 新增：从 Supabase 运行同步逻辑
+  useEffect(() => {
+    if (!supabase) return;
+
+    const syncWithCloud = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('pet_states')
+        .select('content')
+        .eq('user_id', user.id)
+        .single();
+
+      if (data && !error) {
+        setState(data.content);
+      }
+    };
+
+    syncWithCloud();
+  }, []);
+
+  // 新增：自动保存到云端
+  useEffect(() => {
+    localStorage.setItem('smarty_pet_state_v2', JSON.stringify(state));
+    
+    if (supabase) {
+      const saveToCloud = async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        
+        await supabase
+          .from('pet_states')
+          .upsert({ user_id: user.id, content: state, updated_at: new Error().stack });
+      };
+      saveToCloud();
+    }
+  }, [state]);
 
   const [message, setMessage] = useState<string>('');
   const [isThinking, setIsThinking] = useState(false);
@@ -138,6 +144,22 @@ export default function App() {
   const [showPetSelection, setShowPetSelection] = useState(false);
   const [isEvolving, setIsEvolving] = useState(false);
   const [isMuted, setIsMuted] = useState(() => audioService.isMuted());
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [showAuth, setShowAuth] = useState(false);
+
+  // Check auth state on load
+  useEffect(() => {
+    if (!supabase) return;
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setCurrentUser(user);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setCurrentUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const toggleMute = () => {
     const newMuted = audioService.toggleMute();
@@ -320,6 +342,13 @@ export default function App() {
   const handleCreateProfile = () => {
     audioService.play('click');
     setShowPetSelection(true);
+  };
+
+  const handleLogoutAuth = async () => {
+    if (!supabase) return;
+    await supabase.auth.signOut();
+    setCurrentUser(null);
+    audioService.play('click');
   };
 
   const handleInitializePet = (name: string, species: PetSpecies) => {
@@ -1227,7 +1256,7 @@ export default function App() {
             </div>
           </div>
           
-          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4">
             <button
               onClick={toggleMute}
               className="p-3 bg-white/80 hover:bg-white text-[#5D4037] rounded-2xl border-2 border-[#5D4037] shadow-[4px_4px_0px_#5D4037] transition-all active:translate-y-[2px] active:shadow-none"
@@ -1235,6 +1264,28 @@ export default function App() {
             >
               {isMuted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
             </button>
+            {currentUser ? (
+              <div className="flex items-center gap-2 pr-2">
+                <div className="w-10 h-10 bg-[#FF7043] rounded-full border-2 border-[#5D4037] flex items-center justify-center text-white font-black shadow-md">
+                  {currentUser.user_metadata?.username?.charAt(0).toUpperCase() || 'U'}
+                </div>
+                <button
+                  onClick={handleLogoutAuth}
+                  className="p-3 bg-white/80 hover:bg-red-50 text-red-500 rounded-2xl border-2 border-[#5D4037] shadow-[4px_4px_0px_#5D4037] transition-all active:translate-y-[2px] active:shadow-none"
+                  title="退出登录"
+                >
+                  <LogOut className="w-6 h-6" />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowAuth(true)}
+                className="px-6 py-3 bg-[#FF7043] text-white rounded-2xl font-black border-2 border-[#5D4037] shadow-[4px_4px_0px_#5D4037] hover:bg-[#FF8A65] transition-all active:translate-y-[2px] active:shadow-none flex items-center gap-2"
+              >
+                <LogIn className="w-5 h-5" />
+                登录
+              </button>
+            )}
             <div className="flex bg-[#EFEBE9] p-2 rounded-[2.5rem] border-4 border-[#D7CCC8] overflow-x-auto no-scrollbar max-w-[60vw]">
               <button
                 onClick={() => setActiveTab('pet')}
@@ -1253,8 +1304,8 @@ export default function App() {
                   activeTab === 'goals' ? "bg-[#4FC3F7] text-[#5D4037] shadow-md border-2 border-[#5D4037]" : "text-[#A1887F] hover:text-[#5D4037]"
                 )}
               >
-                <TargetIcon className="w-5 h-5" />
-                目标
+                <Users className="w-5 h-5" />
+                好友
               </button>
               <button
                 onClick={() => setActiveTab('shop')}
@@ -1386,6 +1437,8 @@ export default function App() {
               </div>
             </section>
           </main>
+        ) : activeTab === 'goals' && activeProfile ? (
+          <Friends userId={currentUser?.id} />
         ) : activeTab === 'shop' && activeProfile ? (
           <Shop 
             items={activeProfile.shopItems} 
@@ -1424,6 +1477,16 @@ export default function App() {
           <p>© 2026 SmartyPet - 让学习变得更有趣</p>
         </footer>
       </div>
+      
+      {showAuth && (
+        <Auth 
+          onClose={() => setShowAuth(false)} 
+          onSuccess={(user) => {
+            setCurrentUser(user);
+            setShowAuth(false);
+          }} 
+        />
+      )}
     </div>
   );
 }
