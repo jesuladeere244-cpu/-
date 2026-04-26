@@ -18,7 +18,7 @@ export const Auth: React.FC<AuthProps> = ({ onClose, onSuccess }) => {
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!supabase) {
-      setError('检测到 Supabase 配置缺失。请在环境变量或设置中配置 VITE_SUPABASE_URL 和 VITE_SUPABASE_ANON_KEY。');
+      setError('数据库连接未建立，请检查 src/lib/supabase.ts 中的配置。');
       setLoading(false);
       return;
     }

@@ -4,14 +4,13 @@ let aiInstance: GoogleGenAI | null = null;
 
 function getAI() {
   if (!aiInstance) {
-    // Try to get API Key from different possible sources
-    // import.meta.env.VITE_GEMINI_API_KEY is standard for Vite client-side
-    // process.env.GEMINI_API_KEY is for AI Studio/Node environments
-    const apiKey = (import.meta.env?.VITE_GEMINI_API_KEY) || 
-                   (typeof process !== 'undefined' ? process.env?.GEMINI_API_KEY : '');
+    // 优先尝试从环境变量读取，如果没有（比如在 Minimax 部署），则使用这里的硬编码 Key
+    const apiKey = ((import.meta as any).env?.VITE_GEMINI_API_KEY) || 
+                   (typeof process !== 'undefined' ? process.env?.GEMINI_API_KEY : '') ||
+                   'AlzaSyCnCY40KLMMkXjbw3X-RPMPbUe_i-TFpS4'; // 我从你的截图里看到的 Key
     
-    if (!apiKey) {
-      console.warn("Gemini API Key is missing. AI features will fallback to default responses.");
+    if (!apiKey || apiKey.includes('您的')) {
+      console.warn("Gemini API Key is missing.");
       return null;
     }
     aiInstance = new GoogleGenAI({ apiKey });

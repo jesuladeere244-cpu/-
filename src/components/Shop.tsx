@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ShoppingBag, Check, Coins, Package, Plus, Trash2, Settings2, X, Gift, Sparkles } from 'lucide-react';
+import { ShoppingBag, Check, Coins, Package, Plus, Minus, Trash2, Settings2, X, Gift, Sparkles, AlertTriangle } from 'lucide-react';
 import { ShopItem } from '../types';
 import { cn } from '../lib/utils';
 
@@ -12,6 +12,7 @@ interface ShopProps {
   onUseItem: (itemId: string) => void;
   onAddItem: (item: Omit<ShopItem, 'id'>) => void;
   onDeleteItem: (itemId: string) => void;
+  onDeductPoints: (amount: number, reason: string) => void;
 }
 
 interface ItemCardProps {
@@ -71,9 +72,11 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, isOwned, canAfford, isParentM
   );
 };
 
-export const Shop: React.FC<ShopProps> = ({ items, points, inventory, onPurchase, onUseItem, onAddItem, onDeleteItem }) => {
+export const Shop: React.FC<ShopProps> = ({ items, points, inventory, onPurchase, onUseItem, onAddItem, onDeleteItem, onDeductPoints }) => {
   const [isParentMode, setIsParentMode] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [showPointAdjust, setShowPointAdjust] = useState(false);
+  const [pointAdjust, setPointAdjust] = useState({ amount: 10, reason: '' });
   const [newItem, setNewItem] = useState<Omit<ShopItem, 'id'>>({
     name: '',
     price: 100,
@@ -91,6 +94,23 @@ export const Shop: React.FC<ShopProps> = ({ items, points, inventory, onPurchase
       onAddItem(newItem);
       setNewItem({ name: '', price: 100, icon: '🎁', description: '', category: 'pet' });
       setShowAddForm(false);
+    }
+  };
+
+  const handlePointSubmit = (e: React.FormEvent, isDeduct: boolean) => {
+    e.preventDefault();
+    if (pointAdjust.amount > 0 && pointAdjust.reason.trim()) {
+      if (isDeduct) {
+        onDeductPoints(pointAdjust.amount, pointAdjust.reason);
+      } else {
+        // Since we don't have onAddPoints, we use onDeductPoints with negative amount if it supports it, 
+        // or I should just create onAddPoints.
+        // Actually handleDeductPoints in App.tsx uses Math.max(0, p.pet.points - amount)
+        // So I'll add an handleAddPoints to App.tsx too.
+        onDeductPoints(-pointAdjust.amount, pointAdjust.reason);
+      }
+      setPointAdjust({ amount: 10, reason: '' });
+      setShowPointAdjust(false);
     }
   };
 
@@ -200,6 +220,63 @@ export const Shop: React.FC<ShopProps> = ({ items, points, inventory, onPurchase
                 </div>
               </form>
             )}
+
+            <div className="mt-8 pt-8 border-t-2 border-[#FFE0B2]">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <AlertTriangle className="w-6 h-6 text-[#E53935]" />
+                  <h3 className="text-2xl font-black text-[#5D4037] font-hand">调整学习币 (奖励/扣分)</h3>
+                </div>
+                <button onClick={() => setShowPointAdjust(!showPointAdjust)} className="text-[#E53935] font-black hover:underline text-sm uppercase">
+                  {showPointAdjust ? "取消" : "立即调整"}
+                </button>
+              </div>
+
+              {showPointAdjust && (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-xs font-black text-[#8D6E63] uppercase mb-1">调整原因</label>
+                      <input
+                        required
+                        type="text"
+                        value={pointAdjust.reason}
+                        onChange={e => setPointAdjust({ ...pointAdjust, reason: e.target.value })}
+                        className="w-full px-4 py-3 rounded-xl border-2 border-[#D7CCC8] focus:border-[#E53935] outline-none font-bold"
+                        placeholder="例如：作业写得好 / 乱丢垃圾"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-black text-[#8D6E63] uppercase mb-1">币数金额</label>
+                      <div className="relative">
+                        <Coins className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#FF7043]" />
+                        <input
+                          required
+                          type="number"
+                          value={pointAdjust.amount}
+                          onChange={e => setPointAdjust({ ...pointAdjust, amount: parseInt(e.target.value) })}
+                          className="w-full pl-10 pr-4 py-3 rounded-xl border-2 border-[#D7CCC8] focus:border-[#FF7043] outline-none font-bold"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <button 
+                      onClick={(e) => handlePointSubmit(e, false)}
+                      className="py-4 bg-[#81C784] text-white rounded-2xl font-black border-b-4 border-[#388E3C] hover:translate-y-[-2px] active:translate-y-[2px] active:border-b-0 transition-all flex items-center justify-center gap-2"
+                    >
+                      <Plus className="w-5 h-5" /> 奖励加分
+                    </button>
+                    <button 
+                      onClick={(e) => handlePointSubmit(e, true)}
+                      className="py-4 bg-[#E53935] text-white rounded-2xl font-black border-b-4 border-[#B71C1C] hover:translate-y-[-2px] active:translate-y-[2px] active:border-b-0 transition-all flex items-center justify-center gap-2"
+                    >
+                      <Minus className="w-5 h-5" /> 违规扣分
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

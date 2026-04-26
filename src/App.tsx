@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import confetti from 'canvas-confetti';
 import { PetDisplay } from './components/PetDisplay';
 import { TaskList } from './components/TaskList';
@@ -140,7 +141,7 @@ export default function App() {
   const [isThinking, setIsThinking] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
   const [activeAction, setActiveAction] = useState<'feeding' | 'cleaning' | 'playing' | 'studying' | 'sleeping' | 'adventure' | 'meditation' | 'magic' | 'skill' | 'training' | 'garden' | null>(null);
-  const [activeTab, setActiveTab] = useState<'pet' | 'leaderboard' | 'shop' | 'goals' | 'garden'>('pet');
+  const [activeTab, setActiveTab] = useState<'pet' | 'leaderboard' | 'shop' | 'goals' | 'garden' | 'friends'>('pet');
   const [showPetSelection, setShowPetSelection] = useState(false);
   const [isEvolving, setIsEvolving] = useState(false);
   const [isMuted, setIsMuted] = useState(() => audioService.isMuted());
@@ -578,7 +579,9 @@ export default function App() {
     audioService.play('click');
     setState(prev => {
       const p = prev.profiles[prev.activeProfileId!];
+      // If amount is positive, it's a deduction. If negative, it's an addition (reward).
       const newPoints = Math.max(0, p.pet.points - amount);
+      const isDeduction = amount > 0;
       
       return {
         ...prev,
@@ -589,14 +592,18 @@ export default function App() {
             pet: {
               ...p.pet,
               points: newPoints,
-              happiness: Math.max(0, p.pet.happiness - 10) // Penalty also affects happiness
+              happiness: isDeduction ? Math.max(0, p.pet.happiness - 10) : Math.min(100, p.pet.happiness + 5)
             }
           }
         }
       };
     });
 
-    setMessage(`由于【${reason}】，扣除了 ${amount} 学习币。要继续努力哦！`);
+    if (amount > 0) {
+      setMessage(`由于【${reason}】，扣除了 ${amount} 学习币。要继续努力哦！`);
+    } else {
+      setMessage(`因为【${reason}】，奖励了 ${Math.abs(amount)} 学习币！太棒了！✨`);
+    }
     setTimeout(() => setMessage(''), 5000);
   };
 
@@ -1241,6 +1248,28 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#FFF9F2] bg-[url('https://www.transparenttextures.com/patterns/paper-fibers.png')] p-4 md:p-8 font-sans text-[#5D4037]">
+      {/* Global Message Banner */}
+      <AnimatePresence>
+        {message && !isThinking && (
+          <motion.div 
+            initial={{ y: -100, opacity: 0 }}
+            animate={{ y: 20, opacity: 1 }}
+            exit={{ y: -100, opacity: 0 }}
+            className="fixed top-0 left-1/2 -translate-x-1/2 z-[100] w-full max-w-lg px-4"
+          >
+            <div className="bg-white border-4 border-[#5D4037] p-4 rounded-2xl shadow-[8px_8px_0px_#D7CCC8] flex items-center gap-4">
+              <div className="bg-[#FFCC80] p-2 rounded-xl border-2 border-[#5D4037]">
+                <Sparkles className="w-6 h-6 text-[#5D4037]" />
+              </div>
+              <p className="font-black text-[#5D4037] leading-tight">{message}</p>
+              <button onClick={() => setMessage('')} className="ml-auto p-1 text-[#D7CCC8] hover:text-[#5D4037]">
+                <LogOut className="w-5 h-5 rotate-90" />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="max-w-5xl mx-auto">
         {/* Header */}
         <header className="flex flex-col md:flex-row items-center justify-between mb-12 gap-6">
@@ -1298,14 +1327,24 @@ export default function App() {
                 伙伴
               </button>
               <button
-                onClick={() => setActiveTab('goals')}
+                onClick={() => setActiveTab('friends')}
                 className={cn(
                   "flex items-center gap-2 px-6 py-3 rounded-[2rem] text-lg font-black transition-all whitespace-nowrap",
-                  activeTab === 'goals' ? "bg-[#4FC3F7] text-[#5D4037] shadow-md border-2 border-[#5D4037]" : "text-[#A1887F] hover:text-[#5D4037]"
+                  activeTab === 'friends' ? "bg-[#4FC3F7] text-[#5D4037] shadow-md border-2 border-[#5D4037]" : "text-[#A1887F] hover:text-[#5D4037]"
                 )}
               >
                 <Users className="w-5 h-5" />
                 好友
+              </button>
+              <button
+                onClick={() => setActiveTab('goals')}
+                className={cn(
+                  "flex items-center gap-2 px-6 py-3 rounded-[2rem] text-lg font-black transition-all whitespace-nowrap",
+                  activeTab === 'goals' ? "bg-[#FFD54F] text-[#5D4037] shadow-md border-2 border-[#5D4037]" : "text-[#A1887F] hover:text-[#5D4037]"
+                )}
+              >
+                <TargetIcon className="w-5 h-5" />
+                目标
               </button>
               <button
                 onClick={() => setActiveTab('shop')}
@@ -1437,7 +1476,7 @@ export default function App() {
               </div>
             </section>
           </main>
-        ) : activeTab === 'goals' && activeProfile ? (
+        ) : activeTab === 'friends' && activeProfile ? (
           <Friends userId={currentUser?.id} />
         ) : activeTab === 'shop' && activeProfile ? (
           <Shop 
@@ -1448,6 +1487,7 @@ export default function App() {
             onUseItem={handleUseItem}
             onAddItem={handleAddShopItem}
             onDeleteItem={handleDeleteShopItem}
+            onDeductPoints={handleDeductPoints}
           />
         ) : activeTab === 'garden' && activeProfile ? (
             <Garden 
