@@ -812,9 +812,48 @@ export default function App() {
 
     setState(prev => {
         const p = prev.profiles[prev.activeProfileId!];
-        const newXp = p.pet.xp + 500;
+        let newXp = p.pet.xp + 500;
+        let newLevel = p.pet.level;
+        let newNextLevelXp = p.pet.nextLevelXp;
+        let newStage = p.pet.evolutionStage;
+        let newSpecies = p.pet.species;
         const newPoints = p.pet.points + 200;
         
+        // Level up logic
+        while (newXp >= newNextLevelXp) {
+          newLevel += 1;
+          newXp -= newNextLevelXp;
+          newNextLevelXp = Math.floor(newNextLevelXp * 1.2);
+          
+          if (newLevel >= 100) newStage = 'eternal';
+          else if (newLevel >= 80) newStage = 'sanctuary';
+          else if (newLevel >= 60) newStage = 'celestial';
+          else if (newLevel >= 40) newStage = 'mythical';
+          else if (newLevel >= 25) newStage = 'legendary';
+          else if (newLevel >= 15) newStage = 'adult';
+          else if (newLevel >= 10) newStage = 'teen';
+          else if (newLevel >= 5) newStage = 'child';
+        }
+
+        // Eevee evolution check
+        if (EEVEE_FAMILY.includes(p.pet.species)) {
+          const nextEeveeSpecies = getEeveeEvolution(newLevel);
+          if (nextEeveeSpecies !== p.pet.species) {
+            newSpecies = nextEeveeSpecies;
+            setTimeout(() => {
+              const eeveeNames: Record<string, string> = {
+                vaporeon: '水伊布', jolteon: '雷伊布', flareon: '火伊布', 
+                espeon: '太阳伊布', umbreon: '月亮伊布', sylveon: '仙子伊布',
+                leafeon: '叶伊布', glaceon: '冰伊布'
+              };
+              if (eeveeNames[nextEeveeSpecies]) {
+                setMessage(`收割的喜悦！你的伊布进化成了【${eeveeNames[nextEeveeSpecies]}】！✨`);
+                confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
+              }
+            }, 1000);
+          }
+        }
+
         return {
             ...prev,
             profiles: {
@@ -824,6 +863,10 @@ export default function App() {
                     pet: {
                         ...p.pet,
                         xp: newXp,
+                        level: newLevel,
+                        nextLevelXp: newNextLevelXp,
+                        evolutionStage: newStage as any,
+                        species: newSpecies,
                         points: newPoints,
                         garden: {
                             ...p.pet.garden!,
@@ -934,25 +977,25 @@ export default function App() {
             evolved = true;
             newS = newStage;
           }
+        }
 
-          // Eevee Family Dynamic Evolution
-          if (EEVEE_FAMILY.includes(p.pet.species)) {
-            const nextEeveeSpecies = getEeveeEvolution(newLevel);
-            if (nextEeveeSpecies !== p.pet.species) {
-              newSpecies = nextEeveeSpecies;
-              // Special evolution message for Eevee family
-              setTimeout(() => {
-                const eeveeNames: Record<string, string> = {
-                  vaporeon: '水伊布', jolteon: '雷伊布', flareon: '火伊布', 
-                  espeon: '太阳伊布', umbreon: '月亮伊布', sylveon: '仙子伊布',
-                  leafeon: '叶伊布', glaceon: '冰伊布'
-                };
-                if (eeveeNames[nextEeveeSpecies]) {
-                  setMessage(`奇迹发生了！你的伊布进化成了【${eeveeNames[nextEeveeSpecies]}】！✨`);
-                  confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
-                }
-              }, 1000);
-            }
+        // Eevee Family Dynamic Evolution - Check every time to handle existing levels
+        if (EEVEE_FAMILY.includes(p.pet.species)) {
+          const nextEeveeSpecies = getEeveeEvolution(newLevel);
+          if (nextEeveeSpecies !== p.pet.species) {
+            newSpecies = nextEeveeSpecies;
+            // Special evolution message for Eevee family
+            setTimeout(() => {
+              const eeveeNames: Record<string, string> = {
+                vaporeon: '水伊布', jolteon: '雷伊布', flareon: '火伊布', 
+                espeon: '太阳伊布', umbreon: '月亮伊布', sylveon: '仙子伊布',
+                leafeon: '叶伊布', glaceon: '冰伊布'
+              };
+              if (eeveeNames[nextEeveeSpecies]) {
+                setMessage(`奇迹发生了！你的伊布进化成了【${eeveeNames[nextEeveeSpecies]}】！✨`);
+                confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
+              }
+            }, 1000);
           }
         }
 
@@ -1160,6 +1203,40 @@ export default function App() {
         newPet.happiness = Math.min(100, newPet.happiness + 50);
         confetti({ particleCount: 100, spread: 70, colors: ['#ff00ff', '#00ffff'] });
         setMessage(`这就是魔法的力量吗？太神奇了！XP大幅提升！`);
+      }
+
+      // Level up & Evolution check
+      while (newPet.xp >= newPet.nextLevelXp) {
+        newPet.level += 1;
+        newPet.xp -= newPet.nextLevelXp;
+        newPet.nextLevelXp = Math.floor(newPet.nextLevelXp * 1.2);
+        
+        if (newPet.level >= 100) newPet.evolutionStage = 'eternal';
+        else if (newPet.level >= 80) newPet.evolutionStage = 'sanctuary';
+        else if (newPet.level >= 60) newPet.evolutionStage = 'celestial';
+        else if (newPet.level >= 40) newPet.evolutionStage = 'mythical';
+        else if (newPet.level >= 25) newPet.evolutionStage = 'legendary';
+        else if (newPet.level >= 15) newPet.evolutionStage = 'adult';
+        else if (newPet.level >= 10) newPet.evolutionStage = 'teen';
+        else if (newPet.level >= 5) newPet.evolutionStage = 'child';
+      }
+
+      if (EEVEE_FAMILY.includes(newPet.species)) {
+        const nextEeveeSpecies = getEeveeEvolution(newPet.level);
+        if (nextEeveeSpecies !== newPet.species) {
+          newPet.species = nextEeveeSpecies;
+          setTimeout(() => {
+            const eeveeNames: Record<string, string> = {
+              vaporeon: '水伊布', jolteon: '雷伊布', flareon: '火伊布', 
+              espeon: '太阳伊布', umbreon: '月亮伊布', sylveon: '仙子伊布',
+              leafeon: '叶伊布', glaceon: '冰伊布'
+            };
+            if (eeveeNames[nextEeveeSpecies]) {
+              setMessage(`奇迹发生了！你的伊布进化成了【${eeveeNames[nextEeveeSpecies]}】！✨`);
+              confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
+            }
+          }, 1000);
+        }
       }
 
       return {
