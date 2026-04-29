@@ -84,6 +84,22 @@ const MOCK_LEADERBOARD = [
 
 import { supabase } from './lib/supabase';
 
+import { EvolutionPreview } from './components/EvolutionPreview';
+
+const EEVEE_FAMILY: PetSpecies[] = ['eevee', 'vaporeon', 'jolteon', 'flareon', 'espeon', 'umbreon', 'leafeon', 'glaceon', 'sylveon'];
+
+const getEeveeEvolution = (level: number): PetSpecies => {
+  if (level <= 20) return 'eevee';
+  if (level <= 31) return 'vaporeon';
+  if (level <= 42) return 'jolteon';
+  if (level <= 53) return 'flareon';
+  if (level <= 64) return 'espeon';
+  if (level <= 75) return 'umbreon';
+  if (level <= 85) return 'sylveon';
+  if (level <= 95) return 'leafeon';
+  return 'glaceon';
+};
+
 export default function App() {
   const [state, setState] = useState<AppState>(() => {
     // ... 保持原有的 LocalStorage 作为备份和初始状态 ...
@@ -141,6 +157,7 @@ export default function App() {
   const [isThinking, setIsThinking] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
   const [activeAction, setActiveAction] = useState<'feeding' | 'cleaning' | 'playing' | 'studying' | 'sleeping' | 'adventure' | 'meditation' | 'magic' | 'skill' | 'training' | 'garden' | null>(null);
+  const [showEvolutionPreview, setShowEvolutionPreview] = useState(false);
   const [activeTab, setActiveTab] = useState<'pet' | 'leaderboard' | 'shop' | 'goals' | 'garden' | 'friends'>('pet');
   const [showPetSelection, setShowPetSelection] = useState(false);
   const [isEvolving, setIsEvolving] = useState(false);
@@ -892,6 +909,7 @@ export default function App() {
         let newLevel = p.pet.level;
         let newNextLevelXp = p.pet.nextLevelXp;
         let newStage = p.pet.evolutionStage;
+        let newSpecies = p.pet.species;
         const pointsEarned = 10 + pointsBonus;
 
         if (pointsBonus > 0) {
@@ -916,6 +934,26 @@ export default function App() {
             evolved = true;
             newS = newStage;
           }
+
+          // Eevee Family Dynamic Evolution
+          if (EEVEE_FAMILY.includes(p.pet.species)) {
+            const nextEeveeSpecies = getEeveeEvolution(newLevel);
+            if (nextEeveeSpecies !== p.pet.species) {
+              newSpecies = nextEeveeSpecies;
+              // Special evolution message for Eevee family
+              setTimeout(() => {
+                const eeveeNames: Record<string, string> = {
+                  vaporeon: '水伊布', jolteon: '雷伊布', flareon: '火伊布', 
+                  espeon: '太阳伊布', umbreon: '月亮伊布', sylveon: '仙子伊布',
+                  leafeon: '叶伊布', glaceon: '冰伊布'
+                };
+                if (eeveeNames[nextEeveeSpecies]) {
+                  setMessage(`奇迹发生了！你的伊布进化成了【${eeveeNames[nextEeveeSpecies]}】！✨`);
+                  confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
+                }
+              }, 1000);
+            }
+          }
         }
 
         const updatedSkills = (p.pet.skills || []).map(s => ({
@@ -936,6 +974,7 @@ export default function App() {
                 level: newLevel,
                 nextLevelXp: newNextLevelXp,
                 evolutionStage: newStage as any,
+                species: newSpecies,
                 happiness: Math.min(100, p.pet.happiness + 5),
                 points: p.pet.points + pointsEarned,
                 skills: updatedSkills
@@ -1270,6 +1309,13 @@ export default function App() {
         )}
       </AnimatePresence>
 
+      <EvolutionPreview 
+        isOpen={showEvolutionPreview} 
+        onClose={() => setShowEvolutionPreview(false)}
+        currentLevel={activeProfile?.pet?.level || 1}
+        currentSpecies={activeProfile?.pet?.species || 'eevee'}
+      />
+
       <div className="max-w-5xl mx-auto">
         {/* Header */}
         <header className="flex flex-col md:flex-row items-center justify-between mb-12 gap-6">
@@ -1293,28 +1339,40 @@ export default function App() {
             >
               {isMuted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
             </button>
-            {currentUser ? (
-              <div className="flex items-center gap-2 pr-2">
-                <div className="w-10 h-10 bg-[#FF7043] rounded-full border-2 border-[#5D4037] flex items-center justify-center text-white font-black shadow-md">
-                  {currentUser.user_metadata?.username?.charAt(0).toUpperCase() || 'U'}
-                </div>
-                <button
-                  onClick={handleLogoutAuth}
-                  className="p-3 bg-white/80 hover:bg-red-50 text-red-500 rounded-2xl border-2 border-[#5D4037] shadow-[4px_4px_0px_#5D4037] transition-all active:translate-y-[2px] active:shadow-none"
-                  title="退出登录"
-                >
-                  <LogOut className="w-6 h-6" />
-                </button>
-              </div>
-            ) : (
+            {/* Profile Switcher / Logout Button */}
+            <div className="flex items-center gap-2">
               <button
-                onClick={() => setShowAuth(true)}
-                className="px-6 py-3 bg-[#FF7043] text-white rounded-2xl font-black border-2 border-[#5D4037] shadow-[4px_4px_0px_#5D4037] hover:bg-[#FF8A65] transition-all active:translate-y-[2px] active:shadow-none flex items-center gap-2"
+                onClick={() => setState(prev => ({ ...prev, activeProfileId: null }))}
+                className="p-3 bg-[#FFCC80] hover:bg-[#FFB74D] text-[#5D4037] rounded-2xl border-2 border-[#5D4037] shadow-[4px_4px_0px_#5D4037] transition-all active:translate-y-[2px] active:shadow-none flex items-center gap-2"
+                title="切换宝贝档案"
               >
-                <LogIn className="w-5 h-5" />
-                登录
+                <Users className="w-5 h-5" />
+                <span className="hidden sm:inline font-black text-xs uppercase">切换档案</span>
               </button>
-            )}
+
+              {currentUser ? (
+                <div className="flex items-center gap-2 pr-2">
+                  <div className="w-10 h-10 bg-[#FF7043] rounded-full border-2 border-[#5D4037] flex items-center justify-center text-white font-black shadow-md">
+                    {currentUser.user_metadata?.username?.charAt(0).toUpperCase() || 'U'}
+                  </div>
+                  <button
+                    onClick={handleLogoutAuth}
+                    className="p-3 bg-white/80 hover:bg-red-50 text-red-500 rounded-2xl border-2 border-[#5D4037] shadow-[4px_4px_0px_#5D4037] transition-all active:translate-y-[2px] active:shadow-none"
+                    title="退出登录"
+                  >
+                    <LogOut className="w-6 h-6" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setShowAuth(true)}
+                  className="px-6 py-3 bg-[#FF7043] text-white rounded-2xl font-black border-2 border-[#5D4037] shadow-[4px_4px_0px_#5D4037] hover:bg-[#FF8A65] transition-all active:translate-y-[2px] active:shadow-none flex items-center gap-2"
+                >
+                  <LogIn className="w-5 h-5" />
+                  登录
+                </button>
+              )}
+            </div>
             <div className="flex bg-[#EFEBE9] p-2 rounded-[2.5rem] border-4 border-[#D7CCC8] overflow-x-auto no-scrollbar max-w-[60vw]">
               <button
                 onClick={() => setActiveTab('pet')}
@@ -1403,9 +1461,18 @@ export default function App() {
                 ) : (
                   <>
                     <h2 className="text-3xl font-black text-[#5D4037] font-hand">{activeProfile.pet.name}</h2>
-                    <button onClick={() => setIsEditingName(true)} className="p-2 text-[#D7CCC8] hover:text-[#FF7043] transition-colors">
+                    <button onClick={() => setIsEditingName(true)} className="p-2 text-[#D7CCC8] hover:text-[#FF7043] transition-colors" title="更改昵称">
                       <Edit2 className="w-5 h-5" />
                     </button>
+                    {EEVEE_FAMILY.includes(activeProfile.pet.species) && (
+                      <button 
+                        onClick={() => setShowEvolutionPreview(true)}
+                        className="ml-2 flex items-center gap-1 px-3 py-1 bg-[#4FC3F7] text-white rounded-full text-xs font-black border-2 border-[#5D4037] shadow-[2px_2px_0px_#5D4037] hover:translate-y-[-1px] active:translate-y-[1px] active:shadow-none transition-all"
+                      >
+                        <Sparkles className="w-3 h-3" />
+                        进化预览
+                      </button>
+                    )}
                   </>
                 )}
               </div>

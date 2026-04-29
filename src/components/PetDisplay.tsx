@@ -118,6 +118,15 @@ export const PetDisplay: React.FC<PetDisplayProps> = ({
     meowth: { color: 'bg-[#FAFAFA]', radius: 'rounded-full', border: 'border-[#BDBDBD]' },
     eevee: { color: 'bg-[#EFEBE9]', radius: 'rounded-full', border: 'border-[#A1887F]' },
     jigglypuff: { color: 'bg-[#FCE4EC]', radius: 'rounded-full', border: 'border-[#F06292]' },
+    vaporeon: { color: 'bg-[#E3F2FD]', radius: 'rounded-full', border: 'border-[#2196F3]' },
+    jolteon: { color: 'bg-[#FFFDE7]', radius: 'rounded-full', border: 'border-[#FBC02D]' },
+    flareon: { color: 'bg-[#FFEBEE]', radius: 'rounded-full', border: 'border-[#F44336]' },
+    espeon: { color: 'bg-[#F3E5F5]', radius: 'rounded-full', border: 'border-[#AB47BC]' },
+    umbreon: { color: 'bg-[#37474F]', radius: 'rounded-full', border: 'border-[#263238]' },
+    leafeon: { color: 'bg-[#F1F8E9]', radius: 'rounded-full', border: 'border-[#689F38]' },
+    glaceon: { color: 'bg-[#E0F7FA]', radius: 'rounded-full', border: 'border-[#00BCD4]' },
+    sylveon: { color: 'bg-[#FCE4EC]', radius: 'rounded-full', border: 'border-[#F48FB1]' },
+    mew: { color: 'bg-[#FCE4EC]', radius: 'rounded-full', border: 'border-[#F06292]' },
   };
 
   const pokemonIds: Record<string, number> = {
@@ -127,7 +136,16 @@ export const PetDisplay: React.FC<PetDisplayProps> = ({
     pikachu: 25,
     meowth: 52,
     eevee: 133,
-    jigglypuff: 39
+    jigglypuff: 39,
+    vaporeon: 134,
+    jolteon: 135,
+    flareon: 136,
+    espeon: 196,
+    umbreon: 197,
+    leafeon: 470,
+    glaceon: 471,
+    sylveon: 700,
+    mew: 151
   };
 
   const isPokemon = species in pokemonIds;

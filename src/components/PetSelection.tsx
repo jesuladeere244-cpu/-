@@ -36,6 +36,7 @@ export const PetSelection: React.FC<PetSelectionProps> = ({ onSelect }) => {
     { id: 'meowth', name: '喵喵', description: '喜欢闪亮的东西，额头上有金币', color: 'bg-[#FAFAFA]', border: 'border-[#BDBDBD]', icon: '💰' },
     { id: 'eevee', name: '伊布', description: '拥有无限进化的可能', color: 'bg-[#EFEBE9]', border: 'border-[#A1887F]', icon: '🦊' },
     { id: 'jigglypuff', name: '胖丁', description: '歌声动听，能让人陷入沉睡', color: 'bg-[#FCE4EC]', border: 'border-[#F06292]', icon: '🎵' },
+    { id: 'mew', name: '梦幻', description: '传说中的宝可梦，拥有所有宝可梦的基因', color: 'bg-[#FCE4EC]', border: 'border-[#F06292]', icon: '🌈' },
   ];
 
   const handleRoll = () => {
