@@ -298,6 +298,47 @@ export default function App() {
     return () => clearInterval(decayInterval);
   }, [state.activeProfileId, !!activeProfile]);
 
+  // 新增：伊布自动进化校准逻辑
+  useEffect(() => {
+    if (!activeProfile || !activeProfile.pet.isInitialized) return;
+    
+    if (EEVEE_FAMILY.includes(activeProfile.pet.species)) {
+      const correctSpecies = getEeveeEvolution(activeProfile.pet.level);
+      if (correctSpecies !== activeProfile.pet.species) {
+        setState(prev => {
+          const p = prev.profiles[prev.activeProfileId!];
+          if (!p || p.pet.species === correctSpecies) return prev;
+          
+          return {
+            ...prev,
+            profiles: {
+              ...prev.profiles,
+              [prev.activeProfileId!]: {
+                ...p,
+                pet: {
+                   ...p.pet,
+                   species: correctSpecies
+                }
+              }
+            }
+          };
+        });
+        
+        const eeveeNames: Record<string, string> = {
+          vaporeon: '水伊布', jolteon: '雷伊布', flareon: '火伊布', 
+          espeon: '太阳伊布', umbreon: '月亮伊布', sylveon: '仙子伊布',
+          leafeon: '叶伊布', glaceon: '冰伊布'
+        };
+        if (eeveeNames[correctSpecies]) {
+          setTimeout(() => {
+            setMessage(`等级校准！由于等级达到 ${activeProfile.pet.level}，伊布进化成了【${eeveeNames[correctSpecies]}】！✨`);
+            confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
+          }, 100);
+        }
+      }
+    }
+  }, [activeProfile?.pet.level, activeProfile?.pet.species]);
+
   // Update goals based on pet level and xp
   useEffect(() => {
     if (!activeProfile || !activeProfile.pet.isInitialized) return;
