@@ -87,6 +87,7 @@ import { supabase } from './lib/supabase';
 import { EvolutionPreview } from './components/EvolutionPreview';
 
 const EEVEE_FAMILY: PetSpecies[] = ['eevee', 'vaporeon', 'jolteon', 'flareon', 'espeon', 'umbreon', 'leafeon', 'glaceon', 'sylveon'];
+const BULBASAUR_FAMILY: PetSpecies[] = ['bulbasaur', 'ivysaur', 'venusaur', 'venusaur_sky', 'mega_venusaur', 'zacian_forest', 'zarude', 'iron_leaves', 'virizion_god'];
 
 const getEeveeEvolution = (level: number): PetSpecies => {
   if (level <= 20) return 'eevee';
@@ -98,6 +99,18 @@ const getEeveeEvolution = (level: number): PetSpecies => {
   if (level <= 85) return 'sylveon';
   if (level <= 95) return 'leafeon';
   return 'glaceon';
+};
+
+const getBulbasaurEvolution = (level: number): PetSpecies => {
+  if (level <= 20) return 'bulbasaur';
+  if (level <= 35) return 'ivysaur';
+  if (level <= 45) return 'venusaur';
+  if (level <= 55) return 'venusaur_sky';
+  if (level <= 65) return 'mega_venusaur';
+  if (level <= 75) return 'zacian_forest';
+  if (level <= 85) return 'zarude';
+  if (level <= 95) return 'iron_leaves';
+  return 'virizion_god';
 };
 
 export default function App() {
@@ -298,43 +311,55 @@ export default function App() {
     return () => clearInterval(decayInterval);
   }, [state.activeProfileId, !!activeProfile]);
 
-  // 新增：伊布自动进化校准逻辑
+  // 新增：宠物自动进化校准逻辑
   useEffect(() => {
     if (!activeProfile || !activeProfile.pet.isInitialized) return;
     
+    let correctSpecies: PetSpecies | null = null;
+    let familyName = "";
+
     if (EEVEE_FAMILY.includes(activeProfile.pet.species)) {
-      const correctSpecies = getEeveeEvolution(activeProfile.pet.level);
-      if (correctSpecies !== activeProfile.pet.species) {
-        setState(prev => {
-          const p = prev.profiles[prev.activeProfileId!];
-          if (!p || p.pet.species === correctSpecies) return prev;
-          
-          return {
-            ...prev,
-            profiles: {
-              ...prev.profiles,
-              [prev.activeProfileId!]: {
-                ...p,
-                pet: {
-                   ...p.pet,
-                   species: correctSpecies
-                }
+      correctSpecies = getEeveeEvolution(activeProfile.pet.level);
+      familyName = "伊布";
+    } else if (BULBASAUR_FAMILY.includes(activeProfile.pet.species)) {
+      correctSpecies = getBulbasaurEvolution(activeProfile.pet.level);
+      familyName = "妙蛙种子";
+    }
+
+    if (correctSpecies && correctSpecies !== activeProfile.pet.species) {
+      setState(prev => {
+        const p = prev.profiles[prev.activeProfileId!];
+        if (!p || p.pet.species === correctSpecies) return prev;
+        
+        return {
+          ...prev,
+          profiles: {
+            ...prev.profiles,
+            [prev.activeProfileId!]: {
+              ...p,
+              pet: {
+                 ...p.pet,
+                 species: correctSpecies!
               }
             }
-          };
-        });
-        
-        const eeveeNames: Record<string, string> = {
-          vaporeon: '水伊布', jolteon: '雷伊布', flareon: '火伊布', 
-          espeon: '太阳伊布', umbreon: '月亮伊布', sylveon: '仙子伊布',
-          leafeon: '叶伊布', glaceon: '冰伊布'
+          }
         };
-        if (eeveeNames[correctSpecies]) {
-          setTimeout(() => {
-            setMessage(`等级校准！由于等级达到 ${activeProfile.pet.level}，伊布进化成了【${eeveeNames[correctSpecies]}】！✨`);
-            confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
-          }, 100);
-        }
+      });
+      
+      const evolutionNames: Record<string, string> = {
+        vaporeon: '水伊布', jolteon: '雷伊布', flareon: '火伊布', 
+        espeon: '太阳伊布', umbreon: '月亮伊布', sylveon: '仙子伊布',
+        leafeon: '叶伊布', glaceon: '冰伊布',
+        ivysaur: '妙蛙草', venusaur: '妙蛙花', venusaur_sky: '妙蛙花(天穹)',
+        mega_venusaur: '超级妙蛙花', zacian_forest: '起源·剑圣',
+        zarude: '丛林守护者', iron_leaves: '铁斑叶', virizion_god: '森罗神武'
+      };
+
+      if (evolutionNames[correctSpecies]) {
+        setTimeout(() => {
+          setMessage(`等级突破！${familyName}进化成了【${evolutionNames[correctSpecies!]}】！✨`);
+          confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
+        }, 100);
       }
     }
   }, [activeProfile?.pet.level, activeProfile?.pet.species]);

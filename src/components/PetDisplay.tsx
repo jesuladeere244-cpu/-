@@ -127,6 +127,14 @@ export const PetDisplay: React.FC<PetDisplayProps> = ({
     glaceon: { color: 'bg-[#E0F7FA]', radius: 'rounded-full', border: 'border-[#00BCD4]' },
     sylveon: { color: 'bg-[#FCE4EC]', radius: 'rounded-full', border: 'border-[#F48FB1]' },
     mew: { color: 'bg-[#FCE4EC]', radius: 'rounded-full', border: 'border-[#F06292]' },
+    ivysaur: { color: 'bg-[#E0F2F1]', radius: 'rounded-3xl', border: 'border-[#4DB6AC]' },
+    venusaur: { color: 'bg-[#C8E6C9]', radius: 'rounded-2xl', border: 'border-[#66BB6A]' },
+    venusaur_sky: { color: 'bg-[#E8F5E9]', radius: 'rounded-2xl', border: 'border-[#81C784]' },
+    mega_venusaur: { color: 'bg-[#A5D6A7]', radius: 'rounded-2xl', border: 'border-[#2E7D32]' },
+    zacian_forest: { color: 'bg-[#E3F2FD]', radius: 'rounded-2xl', border: 'border-[#1E88E5]' },
+    zarude: { color: 'bg-[#3E2723]', radius: 'rounded-2xl', border: 'border-[#5D4037]' },
+    iron_leaves: { color: 'bg-[#F1F8E9]', radius: 'rounded-2xl', border: 'border-[#00C853]' },
+    virizion_god: { color: 'bg-[#DCEDC8]', radius: 'rounded-2xl', border: 'border-[#558B2F]' },
   };
 
   const pokemonIds: Record<string, number> = {
@@ -145,7 +153,15 @@ export const PetDisplay: React.FC<PetDisplayProps> = ({
     leafeon: 470,
     glaceon: 471,
     sylveon: 700,
-    mew: 151
+    mew: 151,
+    ivysaur: 2,
+    venusaur: 3,
+    venusaur_sky: 3,
+    mega_venusaur: 10033,
+    zacian_forest: 888,
+    zarude: 893,
+    iron_leaves: 1010,
+    virizion_god: 640
   };
 
   const isPokemon = species in pokemonIds;

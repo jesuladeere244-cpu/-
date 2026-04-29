@@ -10,7 +10,7 @@ interface EvolutionPreviewProps {
   currentSpecies: PetSpecies;
 }
 
-const evolutionPath = [
+const eeveePath = [
   { level: 1, species: 'eevee', name: '伊布', icon: '🦊', type: '初始形态', desc: '开启你的冒险之旅', color: 'bg-[#EFEBE9]', border: 'border-[#A1887F]' },
   { level: 21, species: 'vaporeon', name: '水伊布', icon: '💧', type: '水系进化', desc: '身体结构能融入水中', color: 'bg-[#E3F2FD]', border: 'border-[#2196F3]' },
   { level: 32, species: 'jolteon', name: '雷伊布', icon: '⚡', type: '雷系进化', desc: '毛发如针般尖锐', color: 'bg-[#FFFDE7]', border: 'border-[#FBC02D]' },
@@ -22,7 +22,24 @@ const evolutionPath = [
   { level: 96, species: 'glaceon', name: '冰伊布', icon: '❄️', type: '顶级终极 II', desc: '无敌防御 & 极寒美学', color: 'bg-[#E0F7FA]', border: 'border-[#00BCD4]' },
 ];
 
+const bulbasaurPath = [
+  { level: 1, species: 'bulbasaur', name: '妙蛙种子', icon: '🍃', type: '初始形态', desc: '森林的使者', color: 'bg-[#E8F5E9]', border: 'border-[#81C784]' },
+  { level: 21, species: 'ivysaur', name: '妙蛙草', icon: '🌺', type: '成长进化', desc: '花蕾正在绽放', color: 'bg-[#E0F2F1]', border: 'border-[#4DB6AC]' },
+  { level: 36, species: 'venusaur', name: '妙蛙花', icon: '🌴', type: '完全体', desc: '散发出迷人香气', color: 'bg-[#C8E6C9]', border: 'border-[#66BB6A]' },
+  { level: 46, species: 'venusaur_sky', name: '妙蛙花(天穹)', icon: '☁️', type: '天穹形态', desc: '掌控天空自然之力', color: 'bg-[#E8F5E9]', border: 'border-[#81C784]' },
+  { level: 56, species: 'mega_venusaur', name: '超级妙蛙花', icon: '💥', type: '超级进化', desc: '爆发极致木属性', color: 'bg-[#A5D6A7]', border: 'border-[#2E7D32]' },
+  { level: 66, species: 'zacian_forest', name: '起源·剑圣', icon: '⚔️', type: '圣剑进化', desc: '执掌森罗圣剑', color: 'bg-[#E3F2FD]', border: 'border-[#1E88E5]' },
+  { level: 76, species: 'zarude', name: '丛林守护者', icon: '🐒', type: '霸主形态', desc: '密林的野性统领', color: 'bg-[#3E2723]', border: 'border-[#5D4037]' },
+  { level: 86, species: 'iron_leaves', name: '铁斑叶', icon: '🤖', type: '未来形态', desc: '超极巨·妙蛙山之力', color: 'bg-[#F1F8E9]', border: 'border-[#00C853]' },
+  { level: 96, species: 'virizion_god', name: '森罗神武', icon: '👑', type: '传说神话', desc: '无敌防御与神之武学', color: 'bg-[#DCEDC8]', border: 'border-[#558B2F]' },
+];
+
 export const EvolutionPreview: React.FC<EvolutionPreviewProps> = ({ isOpen, onClose, currentLevel, currentSpecies }) => {
+  const isBulbasaurFamily = ['bulbasaur', 'ivysaur', 'venusaur', 'venusaur_sky', 'mega_venusaur', 'zacian_forest', 'zarude', 'iron_leaves', 'virizion_god'].includes(currentSpecies);
+  const currentPath = isBulbasaurFamily ? bulbasaurPath : eeveePath;
+  const familyTitle = isBulbasaurFamily ? '森罗进化图谱' : '伊布家族预览';
+  const headerColor = isBulbasaurFamily ? 'bg-[#66BB6A]' : 'bg-[#4FC3F7]';
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -42,10 +59,10 @@ export const EvolutionPreview: React.FC<EvolutionPreviewProps> = ({ isOpen, onCl
             className="relative w-full max-w-2xl bg-white rounded-[2.5rem] border-4 border-[#5D4037] shadow-[12px_12px_0px_#5D4037] overflow-hidden"
           >
             {/* Header */}
-            <div className="bg-[#4FC3F7] p-6 border-b-4 border-[#5D4037] flex items-center justify-between">
+            <div className={`${headerColor} p-6 border-b-4 border-[#5D4037] flex items-center justify-between`}>
               <div className="flex items-center gap-3">
                 <Sparkles className="w-8 h-8 text-white drop-shadow-md" />
-                <h2 className="text-3xl font-black text-[#5D4037] font-hand">进化之路预览</h2>
+                <h2 className="text-3xl font-black text-[#5D4037] font-hand">{familyTitle}</h2>
               </div>
               <button 
                 onClick={onClose}
@@ -58,7 +75,7 @@ export const EvolutionPreview: React.FC<EvolutionPreviewProps> = ({ isOpen, onCl
             {/* Content */}
             <div className="p-6 max-h-[60vh] overflow-y-auto custom-scrollbar">
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                {evolutionPath.map((stage, index) => {
+                {currentPath.map((stage, index) => {
                   const isUnlocked = currentLevel >= stage.level;
                   const isCurrent = currentSpecies === stage.species;
                   const isFinal = index >= 7;
@@ -82,7 +99,7 @@ export const EvolutionPreview: React.FC<EvolutionPreviewProps> = ({ isOpen, onCl
 
                       {isFinal && (
                         <div className="absolute -top-2 -left-2 bg-[#FF7043] text-white text-[8px] font-black px-2 py-0.5 rounded-full border-2 border-[#5D4037] z-20 rotate-[-10deg]">
-                          ULTIMATE
+                          LEGENDARY
                         </div>
                       )}
                       
@@ -122,7 +139,7 @@ export const EvolutionPreview: React.FC<EvolutionPreviewProps> = ({ isOpen, onCl
                   <Trophy className="w-6 h-6 text-[#FFB300]" />
                 </div>
                 <p className="text-sm font-bold leading-tight">
-                  不断完成学习任务，积累经验值！每提升一级都离更强大的形态更近一步。
+                  {isBulbasaurFamily ? "释放森林的自然潜能！通过不断的学习与自律，妙蛙种子终将蜕变为森罗神武。" : "不断完成学习任务，积累经验值！每提升一级都离更强大的形态更近一步。"}
                 </p>
               </div>
             </div>
