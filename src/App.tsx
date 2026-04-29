@@ -1607,10 +1607,10 @@ export default function App() {
                     <button onClick={() => setIsEditingName(true)} className="p-2 text-[#D7CCC8] hover:text-[#FF7043] transition-colors" title="更改昵称">
                       <Edit2 className="w-5 h-5" />
                     </button>
-                    {EEVEE_FAMILY.includes(activeProfile.pet.species) && (
+                    {(EEVEE_FAMILY.includes(activeProfile.pet.species) || BULBASAUR_FAMILY.includes(activeProfile.pet.species)) && (
                       <button 
                         onClick={() => setShowEvolutionPreview(true)}
-                        className="ml-2 flex items-center gap-1 px-3 py-1 bg-[#4FC3F7] text-white rounded-full text-xs font-black border-2 border-[#5D4037] shadow-[2px_2px_0px_#5D4037] hover:translate-y-[-1px] active:translate-y-[1px] active:shadow-none transition-all"
+                        className={`ml-2 flex items-center gap-1 px-3 py-1 ${BULBASAUR_FAMILY.includes(activeProfile.pet.species) ? 'bg-[#66BB6A]' : 'bg-[#4FC3F7]'} text-white rounded-full text-xs font-black border-2 border-[#5D4037] shadow-[2px_2px_0px_#5D4037] hover:translate-y-[-1px] active:translate-y-[1px] active:shadow-none transition-all`}
                       >
                         <Sparkles className="w-3 h-3" />
                         进化预览

@@ -23,15 +23,15 @@ const eeveePath = [
 ];
 
 const bulbasaurPath = [
-  { level: 1, species: 'bulbasaur', name: '妙蛙种子', icon: '🍃', type: '初始形态', desc: '森林的使者', color: 'bg-[#E8F5E9]', border: 'border-[#81C784]' },
+  { level: 1, species: 'bulbasaur', name: '妙蛙种子', icon: '🍃', type: '初始形态', desc: '开启冒险之旅', color: 'bg-[#E8F5E9]', border: 'border-[#81C784]' },
   { level: 21, species: 'ivysaur', name: '妙蛙草', icon: '🌺', type: '成长进化', desc: '花蕾正在绽放', color: 'bg-[#E0F2F1]', border: 'border-[#4DB6AC]' },
   { level: 36, species: 'venusaur', name: '妙蛙花', icon: '🌴', type: '完全体', desc: '散发出迷人香气', color: 'bg-[#C8E6C9]', border: 'border-[#66BB6A]' },
-  { level: 46, species: 'venusaur_sky', name: '妙蛙花(天穹)', icon: '☁️', type: '天穹形态', desc: '掌控天空自然之力', color: 'bg-[#E8F5E9]', border: 'border-[#81C784]' },
+  { level: 46, species: 'venusaur_sky', name: '妙蛙花(天穹)', icon: '☁️', type: '天穹形态', desc: '掌控天空之力', color: 'bg-[#E8F5E9]', border: 'border-[#81C784]' },
   { level: 56, species: 'mega_venusaur', name: '超级妙蛙花', icon: '💥', type: '超级进化', desc: '爆发极致木属性', color: 'bg-[#A5D6A7]', border: 'border-[#2E7D32]' },
-  { level: 66, species: 'zacian_forest', name: '起源·剑圣', icon: '⚔️', type: '圣剑进化', desc: '执掌森罗圣剑', color: 'bg-[#E3F2FD]', border: 'border-[#1E88E5]' },
+  { level: 66, species: 'zacian_forest', name: '起源·剑圣', icon: '⚔️', type: '创世进化', desc: '执掌森罗圣剑', color: 'bg-[#E3F2FD]', border: 'border-[#1E88E5]' },
   { level: 76, species: 'zarude', name: '丛林守护者', icon: '🐒', type: '霸主形态', desc: '密林的野性统领', color: 'bg-[#3E2723]', border: 'border-[#5D4037]' },
-  { level: 86, species: 'iron_leaves', name: '铁斑叶', icon: '🤖', type: '未来形态', desc: '超极巨·妙蛙山之力', color: 'bg-[#F1F8E9]', border: 'border-[#00C853]' },
-  { level: 96, species: 'virizion_god', name: '森罗神武', icon: '👑', type: '传说神话', desc: '无敌防御与神之武学', color: 'bg-[#DCEDC8]', border: 'border-[#558B2F]' },
+  { level: 86, species: 'iron_leaves', name: '铁斑叶', icon: '🤖', type: '未来形态', desc: '超极巨·妙蛙山', color: 'bg-[#F1F8E9]', border: 'border-[#00C853]' },
+  { level: 96, species: 'virizion_god', name: '森罗神武', icon: '👑', type: '传说形态', desc: '无敌防御与极意', color: 'bg-[#DCEDC8]', border: 'border-[#558B2F]' },
 ];
 
 export const EvolutionPreview: React.FC<EvolutionPreviewProps> = ({ isOpen, onClose, currentLevel, currentSpecies }) => {
