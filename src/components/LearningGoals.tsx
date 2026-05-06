@@ -15,6 +15,7 @@ export const LearningGoals: React.FC<LearningGoalsProps> = ({ goals, onAddGoal, 
   const [isParentMode, setIsParentMode] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showPenaltyForm, setShowPenaltyForm] = useState(false);
+  const [showRewardForm, setShowRewardForm] = useState(false);
   const [newGoal, setNewGoal] = useState<Omit<LearningGoal, 'id' | 'current' | 'isCompleted'>>({
     title: '',
     type: 'tasks',
@@ -23,6 +24,7 @@ export const LearningGoals: React.FC<LearningGoalsProps> = ({ goals, onAddGoal, 
   });
 
   const [penalty, setPenalty] = useState({ amount: 10, reason: '' });
+  const [reward, setReward] = useState({ amount: 10, reason: '' });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,6 +41,16 @@ export const LearningGoals: React.FC<LearningGoalsProps> = ({ goals, onAddGoal, 
       onDeductPoints(penalty.amount, penalty.reason);
       setPenalty({ amount: 10, reason: '' });
       setShowPenaltyForm(false);
+    }
+  };
+
+  const handleRewardSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (reward.amount > 0 && reward.reason.trim()) {
+      // Pass negative amount to handleDeductPoints to ADD points
+      onDeductPoints(-reward.amount, reward.reason);
+      setReward({ amount: 10, reason: '' });
+      setShowRewardForm(false);
     }
   };
 
@@ -148,26 +160,76 @@ export const LearningGoals: React.FC<LearningGoalsProps> = ({ goals, onAddGoal, 
               )}
             </motion.div>
 
-            {/* Penalty Form */}
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="p-8 bg-[#FFEBEE] rounded-[3rem] border-4 border-[#FFCDD2] relative overflow-hidden"
-            >
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                  <AlertTriangle className="w-6 h-6 text-[#E53935]" />
-                  <h3 className="text-2xl font-black text-[#5D4037] font-hand">扣除积分 (惩罚)</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Reward Form */}
+              <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="p-8 bg-[#F1F8E9] rounded-[3rem] border-4 border-[#C5E1A5] relative overflow-hidden"
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <Star className="w-6 h-6 text-[#388E3C]" />
+                    <h3 className="text-2xl font-black text-[#5D4037] font-hand">奖励积分 (加分)</h3>
+                  </div>
+                  <button onClick={() => setShowRewardForm(!showRewardForm)} className="text-[#388E3C] font-black hover:underline">
+                    {showRewardForm ? "取消" : "立即奖励"}
+                  </button>
                 </div>
-                <button onClick={() => setShowPenaltyForm(!showPenaltyForm)} className="text-[#E53935] font-black hover:underline">
-                  {showPenaltyForm ? "取消" : "立即扣除"}
-                </button>
-              </div>
 
-              {showPenaltyForm && (
-                <form onSubmit={handlePenaltySubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
-                  <div className="space-y-4">
+                {showRewardForm && (
+                  <form onSubmit={handleRewardSubmit} className="space-y-6 relative z-10">
+                    <div>
+                      <label className="block text-xs font-black text-[#8D6E63] uppercase mb-1">奖励原因</label>
+                      <input
+                        required
+                        type="text"
+                        value={reward.reason}
+                        onChange={e => setReward({ ...reward, reason: e.target.value })}
+                        className="w-full px-4 py-3 rounded-xl border-2 border-[#D7CCC8] focus:border-[#388E3C] outline-none font-bold"
+                        placeholder="例如：主动帮妈妈洗碗"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-black text-[#8D6E63] uppercase mb-1">奖励数量</label>
+                      <div className="relative">
+                        <Plus className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#388E3C]" />
+                        <input
+                          required
+                          type="number"
+                          value={reward.amount}
+                          onChange={e => setReward({ ...reward, amount: parseInt(e.target.value) })}
+                          className="w-full pl-10 pr-4 py-3 rounded-xl border-2 border-[#D7CCC8] focus:border-[#388E3C] outline-none font-bold text-[#388E3C]"
+                        />
+                      </div>
+                    </div>
+                    <button type="submit" className="w-full py-4 bg-[#388E3C] text-white rounded-2xl font-black border-b-4 border-[#1B5E20] hover:translate-y-[-2px] active:translate-y-[2px] active:border-b-0 transition-all">
+                      确认奖励积分
+                    </button>
+                  </form>
+                )}
+              </motion.div>
+
+              {/* Penalty Form */}
+              <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="p-8 bg-[#FFEBEE] rounded-[3rem] border-4 border-[#FFCDD2] relative overflow-hidden"
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <AlertTriangle className="w-6 h-6 text-[#E53935]" />
+                    <h3 className="text-2xl font-black text-[#5D4037] font-hand">扣除积分 (惩罚)</h3>
+                  </div>
+                  <button onClick={() => setShowPenaltyForm(!showPenaltyForm)} className="text-[#E53935] font-black hover:underline">
+                    {showPenaltyForm ? "取消" : "立即扣除"}
+                  </button>
+                </div>
+
+                {showPenaltyForm && (
+                  <form onSubmit={handlePenaltySubmit} className="space-y-6 relative z-10">
                     <div>
                       <label className="block text-xs font-black text-[#8D6E63] uppercase mb-1">扣除原因</label>
                       <input
@@ -179,8 +241,6 @@ export const LearningGoals: React.FC<LearningGoalsProps> = ({ goals, onAddGoal, 
                         placeholder="例如：未按时完成作业"
                       />
                     </div>
-                  </div>
-                  <div className="space-y-4">
                     <div>
                       <label className="block text-xs font-black text-[#8D6E63] uppercase mb-1">扣除数量</label>
                       <div className="relative">
@@ -194,15 +254,13 @@ export const LearningGoals: React.FC<LearningGoalsProps> = ({ goals, onAddGoal, 
                         />
                       </div>
                     </div>
-                  </div>
-                  <div className="md:col-span-2">
                     <button type="submit" className="w-full py-4 bg-[#E53935] text-white rounded-2xl font-black border-b-4 border-[#B71C1C] hover:translate-y-[-2px] active:translate-y-[2px] active:border-b-0 transition-all">
                       确认扣除积分
                     </button>
-                  </div>
-                </form>
-              )}
-            </motion.div>
+                  </form>
+                )}
+              </motion.div>
+            </div>
           </div>
         )}
       </AnimatePresence>

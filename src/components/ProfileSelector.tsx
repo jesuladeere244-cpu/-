@@ -22,10 +22,16 @@ const SPECIES_EMOJIS: Record<string, string> = {
   slime: '💧', dragon: '🔥', cat: '🐱', robot: '🤖',
   rabbit: '🐰', panda: '🐼', frog: '🐸', pig: '🐷',
   tiger: '🐯', elephant: '🐘', dinosaur: '🦖', fox: '🦊',
-  penguin: '🐧', lion: '🦁'
+  penguin: '🐧', lion: '🦁',
+  eevee: '🦊', vaporeon: '💧', jolteon: '⚡', flareon: '🔥',
+  espeon: '☀️', umbreon: '🌙', sylveon: '✨', leafeon: '🍃', glaceon: '❄️',
+  bulbasaur: '🍃', ivysaur: '🌺', venusaur: '🌴', venusaur_sky: '☁️',
+  mega_venusaur: '💥', zacian_forest: '⚔️', zarude: '🐒', iron_leaves: '🤖', virizion_god: '👑'
 };
 
 export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ profiles, onSelect, onDelete, onCreate }) => {
+  const [deletingId, setDeletingId] = React.useState<string | null>(null);
+
   return (
     <div className="w-full max-w-2xl mx-auto bg-white/90 backdrop-blur-xl rounded-[4rem] p-12 shadow-[20px_20px_0px_rgba(93,64,55,0.1)] border-4 border-[#5D4037] relative overflow-hidden">
       {/* Decorative elements */}
@@ -44,23 +50,51 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ profiles, onSe
         {profiles.map((profile) => (
           <motion.div
             key={profile.id}
-            whileHover={{ scale: 1.05, rotate: 1 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => onSelect(profile.id)}
-            className="flex flex-col items-center gap-4 p-8 bg-[#FFF9F2] hover:bg-white border-4 border-[#D7CCC8] hover:border-[#FFAB91] rounded-[3rem] transition-all group text-center shadow-[8px_8px_0px_#D7CCC8] hover:shadow-[8px_8px_0px_#FFAB91] relative cursor-pointer"
+            whileHover={deletingId ? {} : { scale: 1.05, rotate: 1 }}
+            whileTap={deletingId ? {} : { scale: 0.95 }}
+            onClick={() => !deletingId && onSelect(profile.id)}
+            className={cn(
+              "flex flex-col items-center gap-4 p-8 bg-[#FFF9F2] border-4 rounded-[3rem] transition-all group text-center shadow-[8px_8px_0px_#D7CCC8] relative cursor-pointer",
+              deletingId === profile.id ? "border-red-500 bg-red-50 shadow-none scale-95" : "border-[#D7CCC8] hover:border-[#FFAB91] hover:bg-white hover:shadow-[8px_8px_0px_#FFAB91]"
+            )}
           >
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                if (window.confirm(`确定要删除 ${profile.name} 的档案吗？此操作不可恢复。`)) {
-                  onDelete(profile.id);
-                }
-              }}
-              className="absolute top-4 right-4 p-2 text-[#D7CCC8] hover:text-red-500 hover:bg-red-50 rounded-full transition-all opacity-0 group-hover:opacity-100"
-              title="删除档案"
-            >
-              <Trash2 className="w-5 h-5" />
-            </button>
+            {deletingId === profile.id ? (
+              <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-4 bg-white/95 rounded-[3rem]">
+                <p className="text-red-600 font-black mb-4">确定删除档案？</p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDelete(profile.id);
+                      setDeletingId(null);
+                    }}
+                    className="px-4 py-2 bg-red-500 text-white rounded-full font-black text-sm"
+                  >
+                    确定
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDeletingId(null);
+                    }}
+                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded-full font-black text-sm"
+                  >
+                    取消
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setDeletingId(profile.id);
+                }}
+                className="absolute top-4 right-4 p-2 text-[#D7CCC8] hover:text-red-500 hover:bg-red-50 rounded-full transition-all opacity-0 group-hover:opacity-100 z-10"
+                title="删除档案"
+              >
+                <Trash2 className="w-5 h-5" />
+              </button>
+            )}
             <div className="w-24 h-24 bg-white rounded-[2.5rem] flex items-center justify-center text-[#FF7043] border-4 border-[#EFEBE9] group-hover:border-[#FFAB91] transition-colors shadow-inner text-5xl">
               {SPECIES_EMOJIS[profile.petSpecies] || <UserCircle className="w-16 h-16" />}
             </div>
