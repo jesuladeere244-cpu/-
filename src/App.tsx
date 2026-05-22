@@ -88,6 +88,8 @@ import { EvolutionPreview } from './components/EvolutionPreview';
 
 const EEVEE_FAMILY: PetSpecies[] = ['eevee', 'vaporeon', 'jolteon', 'flareon', 'espeon', 'umbreon', 'leafeon', 'glaceon', 'sylveon'];
 const BULBASAUR_FAMILY: PetSpecies[] = ['bulbasaur', 'ivysaur', 'venusaur', 'venusaur_sky', 'mega_venusaur', 'zacian_forest', 'zarude', 'iron_leaves', 'virizion_god'];
+const CHARIZARD_FAMILY: PetSpecies[] = ['dragon', 'charizard', 'charmander', 'charmeleon', 'charizard_master', 'mega_charizard', 'mega_charizard_glow', 'gigantamax_charizard', 'charcadet', 'koraidon', 'gouging_fire'];
+const PIKACHU_FAMILY: PetSpecies[] = ['pichu', 'pikachu', 'xuanjia_nine', 'raichu', 'wanleizun', 'leizhu', 'nulei', 'ranyuan_leidu', 'leimao_huanying', 'chuan_shuo_shen_qu'];
 
 const getEeveeEvolution = (level: number): PetSpecies => {
   if (level <= 20) return 'eevee';
@@ -111,6 +113,31 @@ const getBulbasaurEvolution = (level: number): PetSpecies => {
   if (level <= 85) return 'zarude';
   if (level <= 95) return 'iron_leaves';
   return 'virizion_god';
+};
+
+const getCharizardEvolution = (level: number): PetSpecies => {
+  if (level <= 20) return 'charmander';
+  if (level <= 35) return 'charmeleon';
+  if (level <= 45) return 'charizard_master';
+  if (level <= 55) return 'mega_charizard';
+  if (level <= 65) return 'mega_charizard_glow';
+  if (level <= 75) return 'gigantamax_charizard';
+  if (level <= 85) return 'charcadet';
+  if (level <= 95) return 'koraidon';
+  return 'gouging_fire';
+};
+
+const getPikachuEvolution = (level: number): PetSpecies => {
+  if (level <= 20) return 'pichu';
+  if (level <= 35) return 'pikachu';
+  if (level <= 45) return 'xuanjia_nine';
+  if (level <= 55) return 'raichu';
+  if (level <= 65) return 'wanleizun';
+  if (level <= 75) return 'leizhu';
+  if (level <= 85) return 'nulei';
+  if (level <= 90) return 'ranyuan_leidu';
+  if (level <= 95) return 'leimao_huanying';
+  return 'chuan_shuo_shen_qu';
 };
 
 export default function App() {
@@ -324,6 +351,12 @@ export default function App() {
     } else if (BULBASAUR_FAMILY.includes(activeProfile.pet.species)) {
       correctSpecies = getBulbasaurEvolution(activeProfile.pet.level);
       familyName = "妙蛙种子";
+    } else if (CHARIZARD_FAMILY.includes(activeProfile.pet.species)) {
+      correctSpecies = getCharizardEvolution(activeProfile.pet.level);
+      familyName = "小火龙";
+    } else if (PIKACHU_FAMILY.includes(activeProfile.pet.species)) {
+      correctSpecies = getPikachuEvolution(activeProfile.pet.level);
+      familyName = "皮卡丘";
     }
 
     if (correctSpecies && correctSpecies !== activeProfile.pet.species) {
@@ -352,7 +385,11 @@ export default function App() {
         leafeon: '叶伊布', glaceon: '冰伊布',
         ivysaur: '妙蛙草', venusaur: '妙蛙花', venusaur_sky: '妙蛙花(天穹)',
         mega_venusaur: '超级妙蛙花', zacian_forest: '起源·剑圣',
-        zarude: '丛林守护者', iron_leaves: '铁斑叶', virizion_god: '森罗神武'
+        zarude: '丛林守护者', iron_leaves: '铁斑叶', virizion_god: '森罗神武',
+        charmeleon: '火恐龙', charizard_master: '喷火空（主宰）',
+        mega_charizard: '超级喷火龙', mega_charizard_glow: '超级喷火龙（辉光）',
+        gigantamax_charizard: '超级巨喷龙空', charcadet: '炭小侍（武者志）',
+        koraidon: '故勒顿（龙王终焉）', gouging_fire: '破空焰'
       };
 
       if (evolutionNames[correctSpecies]) {
@@ -444,6 +481,14 @@ export default function App() {
         { id: 'pb2', name: '阳光烈焰', description: '瞬间完成当前最久的一个任务', icon: 'Sun', minLevel: 20, unlocked: false, cooldown: 86400 }
       ],
       charmander: [
+        { id: 'pc1', name: '喷射火焰', description: '任务获得的经验值增加 20%', icon: 'Flame', minLevel: 5, unlocked: false },
+        { id: 'pc2', name: '大字爆炎', description: '瞬间获得 500 点经验值', icon: 'Zap', minLevel: 25, unlocked: false, cooldown: 172800 }
+      ],
+      charizard: [
+        { id: 'pc1', name: '喷射火焰', description: '任务获得的经验值增加 20%', icon: 'Flame', minLevel: 5, unlocked: false },
+        { id: 'pc2', name: '大字爆炎', description: '瞬间获得 500 点经验值', icon: 'Zap', minLevel: 25, unlocked: false, cooldown: 172800 }
+      ],
+      dragon: [
         { id: 'pc1', name: '喷射火焰', description: '任务获得的经验值增加 20%', icon: 'Flame', minLevel: 5, unlocked: false },
         { id: 'pc2', name: '大字爆炎', description: '瞬间获得 500 点经验值', icon: 'Zap', minLevel: 25, unlocked: false, cooldown: 172800 }
       ],
@@ -1607,10 +1652,10 @@ export default function App() {
                     <button onClick={() => setIsEditingName(true)} className="p-2 text-[#D7CCC8] hover:text-[#FF7043] transition-colors" title="更改昵称">
                       <Edit2 className="w-5 h-5" />
                     </button>
-                    {(EEVEE_FAMILY.includes(activeProfile.pet.species) || BULBASAUR_FAMILY.includes(activeProfile.pet.species)) && (
+                    {(EEVEE_FAMILY.includes(activeProfile.pet.species) || BULBASAUR_FAMILY.includes(activeProfile.pet.species) || CHARIZARD_FAMILY.includes(activeProfile.pet.species) || PIKACHU_FAMILY.includes(activeProfile.pet.species)) && (
                       <button 
                         onClick={() => setShowEvolutionPreview(true)}
-                        className={`ml-2 flex items-center gap-1 px-3 py-1 ${BULBASAUR_FAMILY.includes(activeProfile.pet.species) ? 'bg-[#66BB6A]' : 'bg-[#4FC3F7]'} text-white rounded-full text-xs font-black border-2 border-[#5D4037] shadow-[2px_2px_0px_#5D4037] hover:translate-y-[-1px] active:translate-y-[1px] active:shadow-none transition-all`}
+                        className={`ml-2 flex items-center gap-1 px-3 py-1 ${BULBASAUR_FAMILY.includes(activeProfile.pet.species) ? 'bg-[#66BB6A]' : CHARIZARD_FAMILY.includes(activeProfile.pet.species) ? 'bg-[#F4511E]' : PIKACHU_FAMILY.includes(activeProfile.pet.species) ? 'bg-[#FBC02D]' : 'bg-[#4FC3F7]'} text-white rounded-full text-xs font-black border-2 border-[#5D4037] shadow-[2px_2px_0px_#5D4037] hover:translate-y-[-1px] active:translate-y-[1px] active:shadow-none transition-all`}
                       >
                         <Sparkles className="w-3 h-3" />
                         进化预览

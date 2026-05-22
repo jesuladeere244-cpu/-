@@ -16,7 +16,7 @@ export const PetSelection: React.FC<PetSelectionProps> = ({ onSelect }) => {
 
   const speciesOptions: { id: PetSpecies; name: string; description: string; color: string; icon: string; border: string }[] = [
     { id: 'slime', name: '史莱姆', description: '软绵绵的，最喜欢抱抱', color: 'bg-[#B2EBF2]', border: 'border-[#00ACC1]', icon: '💧' },
-    { id: 'dragon', name: '小火龙', description: '调皮捣蛋，梦想是飞翔', color: 'bg-[#FFCDD2]', border: 'border-[#E53935]', icon: '🔥' },
+    { id: 'charmander', name: '小火龙', description: '火系宝可梦，尾巴上的火焰是生命源泉', color: 'bg-[#FFCDD2]', border: 'border-[#E53935]', icon: '🔥' },
     { id: 'cat', name: '好奇猫', description: '聪明伶俐，学习的好帮手', color: 'bg-[#FFE0B2]', border: 'border-[#FB8C00]', icon: '🐱' },
     { id: 'robot', name: '小机器人', description: '逻辑满分，科技感十足', color: 'bg-[#D1C4E9]', border: 'border-[#5E35B1]', icon: '🤖' },
     { id: 'rabbit', name: '长耳兔', description: '蹦蹦跳跳，活力四射', color: 'bg-[#F8BBD0]', border: 'border-[#C2185B]', icon: '🐰' },
@@ -30,7 +30,6 @@ export const PetSelection: React.FC<PetSelectionProps> = ({ onSelect }) => {
     { id: 'penguin', name: '企鹅仔', description: '摇摇晃晃，极地小绅士', color: 'bg-[#ECEFF1]', border: 'border-[#263238]', icon: '🐧' },
     { id: 'lion', name: '小狮子', description: '森林之王，自信满满', color: 'bg-[#FFF9C4]', border: 'border-[#FBC02D]', icon: '🦁' },
     { id: 'bulbasaur', name: '妙蛙种子', description: '草系宝可梦，背上的种子会发芽', color: 'bg-[#E0F2F1]', border: 'border-[#4DB6AC]', icon: '🍃' },
-    { id: 'charmander', name: '小火龙', description: '火系宝可梦，尾巴上的火焰是生命力', color: 'bg-[#FFF3E0]', border: 'border-[#FFB74D]', icon: '🔥' },
     { id: 'squirtle', name: '杰尼龟', description: '水系宝可梦，坚硬的甲壳是最好的防御', color: 'bg-[#E3F2FD]', border: 'border-[#64B5F6]', icon: '💧' },
     { id: 'pikachu', name: '皮卡丘', description: '电系宝可梦，脸颊上有电力袋', color: 'bg-[#FFFDE7]', border: 'border-[#FFF176]', icon: '⚡' },
     { id: 'meowth', name: '喵喵', description: '喜欢闪亮的东西，额头上有金币', color: 'bg-[#FAFAFA]', border: 'border-[#BDBDBD]', icon: '💰' },

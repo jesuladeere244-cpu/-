@@ -6,7 +6,7 @@ export interface Task {
   createdAt: number;
 }
 
-export type PetSpecies = 'slime' | 'dragon' | 'cat' | 'robot' | 'rabbit' | 'panda' | 'frog' | 'pig' | 'tiger' | 'elephant' | 'dinosaur' | 'fox' | 'penguin' | 'lion' | 'bulbasaur' | 'charmander' | 'squirtle' | 'pikachu' | 'meowth' | 'eevee' | 'jigglypuff' | 'vaporeon' | 'jolteon' | 'flareon' | 'espeon' | 'umbreon' | 'leafeon' | 'glaceon' | 'sylveon' | 'mew' | 'ivysaur' | 'venusaur' | 'venusaur_sky' | 'mega_venusaur' | 'zacian_forest' | 'zarude' | 'iron_leaves' | 'virizion_god';
+export type PetSpecies = 'slime' | 'dragon' | 'cat' | 'robot' | 'rabbit' | 'panda' | 'frog' | 'pig' | 'tiger' | 'elephant' | 'dinosaur' | 'fox' | 'penguin' | 'lion' | 'bulbasaur' | 'charmander' | 'squirtle' | 'pikachu' | 'meowth' | 'eevee' | 'jigglypuff' | 'vaporeon' | 'jolteon' | 'flareon' | 'espeon' | 'umbreon' | 'leafeon' | 'glaceon' | 'sylveon' | 'mew' | 'ivysaur' | 'venusaur' | 'venusaur_sky' | 'mega_venusaur' | 'zacian_forest' | 'zarude' | 'iron_leaves' | 'virizion_god' | 'charizard' | 'charmeleon' | 'charizard_master' | 'mega_charizard' | 'mega_charizard_glow' | 'gigantamax_charizard' | 'charcadet' | 'koraidon' | 'gouging_fire' | 'pichu' | 'xuanjia_nine' | 'raichu' | 'wanleizun' | 'leizhu' | 'nulei' | 'ranyuan_leidu' | 'leimao_huanying' | 'chuan_shuo_shen_qu';
 
 export interface PetSkill {
   id: string;
