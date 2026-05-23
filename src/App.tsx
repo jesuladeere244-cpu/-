@@ -162,6 +162,24 @@ export default function App() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
+      // 自我修复：确保 profiles 中一定存在该用户的记录
+      try {
+        const { data: profile, error: profileQueryError } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        if (!profile && !profileQueryError) {
+          const username = user.user_metadata?.username || user.email?.split('@')[0] || 'User';
+          await supabase
+            .from('profiles')
+            .insert([{ id: user.id, username }]);
+        }
+      } catch (err) {
+        console.error('Error auto-healing profile:', err);
+      }
+
       const { data, error } = await supabase
         .from('pet_states')
         .select('content')
