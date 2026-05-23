@@ -221,6 +221,90 @@ export default function App() {
   const [isEvolving, setIsEvolving] = useState(false);
   const [isMuted, setIsMuted] = useState(() => audioService.isMuted());
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [realFriends, setRealFriends] = useState<any[]>([]);
+
+  const fetchRealFriends = async () => {
+    if (!supabase || !currentUser) return;
+    try {
+      const { data: friendshipsData, error: friendshipsError } = await supabase
+        .from('friendships')
+        .select('friend_id')
+        .eq('user_id', currentUser.id);
+
+      if (friendshipsError || !friendshipsData) return;
+
+      const friendIds = friendshipsData.map(f => f.friend_id);
+      if (friendIds.length === 0) {
+        setRealFriends([]);
+        return;
+      }
+
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, username, avatar_url')
+        .in('id', friendIds);
+
+      if (profilesError || !profilesData) return;
+
+      const { data: petStatesData, error: petStatesError } = await supabase
+        .from('pet_states')
+        .select('user_id, content')
+        .in('user_id', friendIds);
+
+      const assembledFriends = profilesData.map(profile => {
+        const petStateRow = petStatesData?.find(ps => ps.user_id === profile.id);
+        const petStateContent = petStateRow?.content;
+        
+        let petInfo = {
+          name: '小可爱',
+          species: 'slime',
+          level: 1,
+          xp: 0,
+          points: 0,
+        };
+
+        if (petStateContent && petStateContent.activeProfileId && petStateContent.profiles) {
+          const activeProf = petStateContent.profiles[petStateContent.activeProfileId];
+          if (activeProf && activeProf.pet) {
+            petInfo = {
+              name: activeProf.pet.name || '小可爱',
+              species: activeProf.pet.species || 'slime',
+              level: activeProf.pet.level || 1,
+              xp: activeProf.pet.xp || 0,
+              points: activeProf.pet.points || 0,
+            };
+          }
+        }
+
+        return {
+          id: profile.id,
+          username: profile.username || '神秘伙伴',
+          avatar_url: profile.avatar_url,
+          pet: petInfo,
+        };
+      });
+
+      setRealFriends(assembledFriends);
+    } catch (err) {
+      console.error('Error fetching real friends:', err);
+    }
+  };
+
+  useEffect(() => {
+    if (currentUser) {
+      fetchRealFriends();
+    } else {
+      setRealFriends([]);
+    }
+  }, [currentUser]);
+
+  // Synchronize on active tab shifts
+  useEffect(() => {
+    if (currentUser && (activeTab === 'friends' || activeTab === 'leaderboard')) {
+      fetchRealFriends();
+    }
+  }, [activeTab, currentUser]);
+
   const [showAuth, setShowAuth] = useState(false);
 
   // Check auth state on load
@@ -1480,6 +1564,15 @@ export default function App() {
 
   const leaderboardEntries = [
     ...MOCK_LEADERBOARD,
+    ...realFriends.map(friend => ({
+      id: friend.id,
+      name: friend.username,
+      petName: friend.pet.name,
+      level: friend.pet.level,
+      xp: friend.pet.xp,
+      points: friend.pet.points,
+      isCurrentUser: false
+    })),
     ...Object.entries(state.profiles).map(([id, p]: [string, any]) => ({
       id,
       name: id === Object.keys(state.profiles)[0] ? "大宝贝" : "小宝贝",
