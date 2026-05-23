@@ -37,15 +37,18 @@ export const Friends: React.FC<FriendsProps> = ({ userId }) => {
     setMessage(null);
 
     try {
-      // 通过 8 位邀请码精确匹配
-      const { data: targetUser, error: findError } = await supabase
+      // 获取所有用户，在内存中进行 8 位 UUID 邀请码的匹配，避免了对数据库加列或进行复杂的 UUID 类型转换
+      const { data: allProfiles, error: findError } = await supabase
         .from('profiles')
-        .select('id, username')
-        .eq('invite_code', friendCode.trim().toUpperCase())
-        .limit(1)
-        .single();
+        .select('id, username');
 
-      if (findError || !targetUser) throw new Error('找不到该邀请码对应的用户');
+      if (findError || !allProfiles) throw new Error('查询用户失败，请稍后重试');
+
+      const targetUser = allProfiles.find(p => 
+        p.id.slice(0, 8).toUpperCase() === friendCode.trim().toUpperCase()
+      );
+
+      if (!targetUser) throw new Error('找不到该邀请码对应的用户');
       if (targetUser.id === userId) throw new Error('不能添加自己为好友哦');
 
       const { error: addError } = await supabase
