@@ -37,11 +37,11 @@ export const Friends: React.FC<FriendsProps> = ({ userId }) => {
     setMessage(null);
 
     try {
-      // 通过前8位匹配 ID
+      // 通过 8 位邀请码精确匹配
       const { data: targetUser, error: findError } = await supabase
         .from('profiles')
         .select('id, username')
-        .ilike('id', `${friendCode}%`)
+        .eq('invite_code', friendCode.trim().toUpperCase())
         .limit(1)
         .single();
 
