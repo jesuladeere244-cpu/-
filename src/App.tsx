@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import confetti from 'canvas-confetti';
 import { PetDisplay } from './components/PetDisplay';
@@ -91,6 +91,53 @@ const BULBASAUR_FAMILY: PetSpecies[] = ['bulbasaur', 'ivysaur', 'venusaur', 'ven
 const CHARIZARD_FAMILY: PetSpecies[] = ['dragon', 'charizard', 'charmander', 'charmeleon', 'charizard_master', 'mega_charizard', 'mega_charizard_glow', 'gigantamax_charizard', 'charcadet', 'koraidon', 'gouging_fire'];
 const PIKACHU_FAMILY: PetSpecies[] = ['pichu', 'pikachu', 'xuanjia_nine', 'raichu', 'wanleizun', 'leizhu', 'nulei', 'ranyuan_leidu', 'leimao_huanying', 'chuan_shuo_shen_qu'];
 
+const getSlimeStageName = (level: number): string => {
+  if (level <= 20) return "初级史莱姆";
+  if (level <= 35) return "水雾";
+  if (level <= 45) return "燃珠";
+  if (level <= 55) return "熔岩";
+  if (level <= 65) return "冰晶史";
+  if (level <= 75) return "风刃";
+  if (level <= 85) return "幽紫史";
+  if (level <= 95) return "花叶史";
+  return "巨型综合体";
+};
+
+const getSpeciesDisplayName = (species: PetSpecies, level: number = 1): string => {
+  if (species === 'slime') {
+    return getSlimeStageName(level);
+  }
+  
+  const mapping: Record<string, string> = {
+    slime: '史莱姆',
+    dragon: '小火龙',
+    cat: '好奇猫',
+    robot: '小机器人',
+    rabbit: '长耳兔',
+    panda: '圆圆熊猫',
+    frog: '跳跳蛙',
+    pig: '粉粉猪',
+    tiger: '小老虎',
+    elephant: '憨憨象',
+    dinosaur: '小恐龙',
+    fox: '灵狐',
+    penguin: '企鹅仔',
+    lion: '小狮子',
+    
+    // Pokemon names
+    bulbasaur: '妙蛙种子', ivysaur: '妙蛙草', venusaur: '妙蛙花', venusaur_sky: '妙蛙花(天穹)', mega_venusaur: '超级妙蛙花',
+    charmander: '小火龙', charmeleon: '火恐龙', charizard: '喷火龙', charizard_master: '喷火龙(主宰)', mega_charizard: '超级喷火龙', mega_charizard_glow: '超级喷火龙(辉光)', gigantamax_charizard: '超级巨喷火龙', charcadet: '碳小侍', koraidon: '故勒顿', gouging_fire: '破空焰',
+    squirtle: '杰尼龟', 
+    pichu: '皮丘', pikachu: '皮卡丘', raichu: '雷丘', xuanjia_nine: '玄甲九号', wanleizun: '万雷尊', leizhu: '雷柱', nulei: '怒雷', ranyuan_leidu: '蝾螈雷毒', leimao_huanying: '雷猫幻影', chuan_shuo_shen_qu: '传说神驱',
+    meowth: '喵喵',
+    eevee: '伊布', vaporeon: '水伊布', jolteon: '雷伊布', flareon: '火伊布', espeon: '太阳伊布', umbreon: '月亮伊布', leafeon: '叶伊布', glaceon: '冰伊布', sylveon: '仙子伊布',
+    jigglypuff: '胖丁', mew: '梦幻',
+    zacian_forest: '起源·剑圣', zarude: '丛林守护者', iron_leaves: '铁斑叶', virizion_god: '森罗神武'
+  };
+
+  return mapping[species] || species;
+};
+
 const getEeveeEvolution = (level: number): PetSpecies => {
   if (level <= 20) return 'eevee';
   if (level <= 31) return 'vaporeon';
@@ -142,12 +189,10 @@ const getPikachuEvolution = (level: number): PetSpecies => {
 
 export default function App() {
   const [state, setState] = useState<AppState>(() => {
-    // ... 保持原有的 LocalStorage 作为备份和初始状态 ...
     try {
       const saved = localStorage.getItem('smarty_pet_state_v2');
       if (!saved) return INITIAL_STATE;
       const parsed = JSON.parse(saved) as AppState;
-      // ... 原有的迁移逻辑 ...
       return parsed;
     } catch {
       return INITIAL_STATE;
@@ -159,35 +204,40 @@ export default function App() {
     if (!supabase) return;
 
     const syncWithCloud = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      // 自我修复：确保 profiles 中一定存在该用户的记录
       try {
-        const { data: profile, error: profileQueryError } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('id', user.id)
-          .maybeSingle();
+        const res = await supabase.auth.getUser();
+        const user = res && res.data ? res.data.user : null;
+        if (!user) return;
 
-        if (!profile && !profileQueryError) {
-          const username = user.user_metadata?.username || user.email?.split('@')[0] || 'User';
-          await supabase
+        // 自我修复：确保 profiles 中一定存在该用户的记录
+        try {
+          const { data: profile, error: profileQueryError } = await supabase
             .from('profiles')
-            .insert([{ id: user.id, username }]);
+            .select('id')
+            .eq('id', user.id)
+            .maybeSingle();
+
+          if (!profile && !profileQueryError) {
+            const username = user.user_metadata?.username || user.email?.split('@')[0] || 'User';
+            await supabase
+              .from('profiles')
+              .insert([{ id: user.id, username }]);
+          }
+        } catch (err) {
+          // silent sync fail fallback
+        }
+
+        const { data, error } = await supabase
+          .from('pet_states')
+          .select('content')
+          .eq('user_id', user.id)
+          .single();
+
+        if (data && !error) {
+          setState(data.content);
         }
       } catch (err) {
-        console.error('Error auto-healing profile:', err);
-      }
-
-      const { data, error } = await supabase
-        .from('pet_states')
-        .select('content')
-        .eq('user_id', user.id)
-        .single();
-
-      if (data && !error) {
-        setState(data.content);
+        // silent sync fail fallback
       }
     };
 
@@ -200,12 +250,17 @@ export default function App() {
     
     if (supabase) {
       const saveToCloud = async () => {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
-        
-        await supabase
-          .from('pet_states')
-          .upsert({ user_id: user.id, content: state, updated_at: new Error().stack });
+        try {
+          const res = await supabase.auth.getUser();
+          const user = res && res.data ? res.data.user : null;
+          if (!user) return;
+          
+          await supabase
+            .from('pet_states')
+            .upsert({ user_id: user.id, content: state, updated_at: new Error().stack });
+        } catch (err) {
+          // silent save fail fallback
+        }
       };
       saveToCloud();
     }
@@ -310,8 +365,11 @@ export default function App() {
   // Check auth state on load
   useEffect(() => {
     if (!supabase) return;
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setCurrentUser(user);
+    supabase.auth.getUser().then((res) => {
+      const u = res && res.data ? res.data.user : null;
+      setCurrentUser(u);
+    }).catch(() => {
+      // safe fallback, silent
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -439,6 +497,55 @@ export default function App() {
 
     return () => clearInterval(decayInterval);
   }, [state.activeProfileId, !!activeProfile]);
+
+  // 新增：史莱姆阶段蜕变追踪逻辑
+  const lastSlimeStageRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!activeProfile || !activeProfile.pet.isInitialized) return;
+    if (activeProfile.pet.species === 'slime') {
+      const currentStageName = getSlimeStageName(activeProfile.pet.level);
+      if (lastSlimeStageRef.current === null) {
+        lastSlimeStageRef.current = currentStageName;
+      } else if (lastSlimeStageRef.current !== currentStageName) {
+        const oldStage = lastSlimeStageRef.current;
+        lastSlimeStageRef.current = currentStageName;
+        
+        setIsEvolving(true);
+        audioService.play('evolution');
+        setMessage(`天哪！你的史莱姆正在发生非常奇妙的蜕变进化……`);
+        
+        // Multi-stage fireworks
+        const duration = 2500;
+        const animationEnd = Date.now() + duration;
+        const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 9999 };
+        const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
+
+        const interval: any = setInterval(function() {
+          const timeLeft = animationEnd - Date.now();
+          if (timeLeft <= 0) {
+            return clearInterval(interval);
+          }
+          const particleCount = 50 * (timeLeft / duration);
+          confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
+          confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
+        }, 250);
+
+        setTimeout(() => {
+          setIsEvolving(false);
+          setMessage(`等级突破！你的史莱姆由【${oldStage}】成功蜕变进化成了【${currentStageName}】！✨`);
+          confetti({
+            particleCount: 200,
+            spread: 160,
+            origin: { y: 0.6 },
+            colors: ['#29B6F6', '#00E5FF', '#00E676', '#FFD54F']
+          });
+          audioService.play('success');
+        }, 2500);
+      }
+    } else {
+      lastSlimeStageRef.current = null;
+    }
+  }, [activeProfile?.pet.level, activeProfile?.pet.species]);
 
   // 新增：宠物自动进化校准逻辑
   useEffect(() => {
@@ -1759,14 +1866,19 @@ export default function App() {
                   />
                 ) : (
                   <>
-                    <h2 className="text-3xl font-black text-[#5D4037] font-hand">{activeProfile.pet.name}</h2>
+                    <h2 className="text-3xl font-black text-[#5D4037] font-hand flex items-center gap-2">
+                      {activeProfile.pet.name}
+                      <span className="text-sm px-2.5 py-0.5 bg-[#E1F5FE] text-[#0288D1] rounded-full border border-[#B3E5FC] font-sans font-extrabold shadow-[1px_1px_0px_#0288D1]">
+                        {getSpeciesDisplayName(activeProfile.pet.species, activeProfile.pet.level)}
+                      </span>
+                    </h2>
                     <button onClick={() => setIsEditingName(true)} className="p-2 text-[#D7CCC8] hover:text-[#FF7043] transition-colors" title="更改昵称">
                       <Edit2 className="w-5 h-5" />
                     </button>
-                    {(EEVEE_FAMILY.includes(activeProfile.pet.species) || BULBASAUR_FAMILY.includes(activeProfile.pet.species) || CHARIZARD_FAMILY.includes(activeProfile.pet.species) || PIKACHU_FAMILY.includes(activeProfile.pet.species)) && (
+                    {(activeProfile.pet.species === 'slime' || EEVEE_FAMILY.includes(activeProfile.pet.species) || BULBASAUR_FAMILY.includes(activeProfile.pet.species) || CHARIZARD_FAMILY.includes(activeProfile.pet.species) || PIKACHU_FAMILY.includes(activeProfile.pet.species)) && (
                       <button 
                         onClick={() => setShowEvolutionPreview(true)}
-                        className={`ml-2 flex items-center gap-1 px-3 py-1 ${BULBASAUR_FAMILY.includes(activeProfile.pet.species) ? 'bg-[#66BB6A]' : CHARIZARD_FAMILY.includes(activeProfile.pet.species) ? 'bg-[#F4511E]' : PIKACHU_FAMILY.includes(activeProfile.pet.species) ? 'bg-[#FBC02D]' : 'bg-[#4FC3F7]'} text-white rounded-full text-xs font-black border-2 border-[#5D4037] shadow-[2px_2px_0px_#5D4037] hover:translate-y-[-1px] active:translate-y-[1px] active:shadow-none transition-all`}
+                        className={`ml-2 flex items-center gap-1 px-3 py-1 ${activeProfile.pet.species === 'slime' ? 'bg-[#29B6F6]' : BULBASAUR_FAMILY.includes(activeProfile.pet.species) ? 'bg-[#66BB6A]' : CHARIZARD_FAMILY.includes(activeProfile.pet.species) ? 'bg-[#F4511E]' : PIKACHU_FAMILY.includes(activeProfile.pet.species) ? 'bg-[#FBC02D]' : 'bg-[#4FC3F7]'} text-white rounded-full text-xs font-black border-2 border-[#5D4037] shadow-[2px_2px_0px_#5D4037] hover:translate-y-[-1px] active:translate-y-[1px] active:shadow-none transition-all`}
                       >
                         <Sparkles className="w-3 h-3" />
                         进化预览
@@ -1787,6 +1899,7 @@ export default function App() {
                   message={message}
                   activeAction={activeAction}
                   isEvolving={isEvolving}
+                  level={activeProfile.pet.level}
                 />
               </div>
 

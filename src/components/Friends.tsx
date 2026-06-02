@@ -25,7 +25,18 @@ export const Friends: React.FC<FriendsProps> = ({ userId }) => {
     setInviteCode(userId.slice(0, 8).toUpperCase());
   }, [userId]);
 
-  const getSpeciesEmoji = (species: string): string => {
+  const getSpeciesEmoji = (species: string, level: number = 1): string => {
+    if (species === 'slime') {
+      if (level <= 20) return '💧';
+      if (level <= 35) return '🌫️';
+      if (level <= 45) return '🔮';
+      if (level <= 55) return '🌋';
+      if (level <= 65) return '❄️';
+      if (level <= 75) return '🌀';
+      if (level <= 85) return '👾';
+      if (level <= 95) return '🌸';
+      return '🌟';
+    }
     const mapping: { [key: string]: string } = {
       slime: '💧',
       dragon: '🐉',
@@ -343,7 +354,7 @@ export const Friends: React.FC<FriendsProps> = ({ userId }) => {
                 <div className="flex items-start gap-4 mb-4">
                   <div className="w-12 h-12 bg-indigo-50 border-2 border-indigo-100 rounded-full flex items-center justify-center text-2xl shadow-inner relative">
                     <span className="text-center select-none" role="img" aria-label="avatar">
-                      {getSpeciesEmoji(f.pet.species)}
+                      {getSpeciesEmoji(f.pet.species, f.pet.level)}
                     </span>
                     <span className="absolute -bottom-1 -right-1 text-xs bg-[#FFB300] text-white w-5 h-5 rounded-full flex items-center justify-center font-black border border-white">
                       {f.pet.level}
@@ -359,7 +370,7 @@ export const Friends: React.FC<FriendsProps> = ({ userId }) => {
                     <p className="text-xs font-bold text-[#8D6E63] mt-1 flex items-center gap-1">
                       <span>宠物: </span>
                       <span className="text-[#FF7043] bg-orange-50 px-2 py-0.5 rounded-lg border border-orange-100/50">
-                        {getSpeciesEmoji(f.pet.species)} {f.pet.name}
+                        {getSpeciesEmoji(f.pet.species, f.pet.level)} {f.pet.name}
                       </span>
                     </p>
                   </div>

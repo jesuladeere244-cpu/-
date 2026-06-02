@@ -96,7 +96,18 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ profiles, onSe
               </button>
             )}
             <div className="w-24 h-24 bg-white rounded-[2.5rem] flex items-center justify-center text-[#FF7043] border-4 border-[#EFEBE9] group-hover:border-[#FFAB91] transition-colors shadow-inner text-5xl">
-              {SPECIES_EMOJIS[profile.petSpecies] || <UserCircle className="w-16 h-16" />}
+              {profile.petSpecies === 'slime' ? (
+                profile.level <= 20 ? '💧' :
+                profile.level <= 35 ? '🌫️' :
+                profile.level <= 45 ? '🔮' :
+                profile.level <= 55 ? '🌋' :
+                profile.level <= 65 ? '❄️' :
+                profile.level <= 75 ? '🌀' :
+                profile.level <= 85 ? '👾' :
+                profile.level <= 95 ? '🌸' : '🌟'
+              ) : (
+                SPECIES_EMOJIS[profile.petSpecies] || <UserCircle className="w-16 h-16" />
+              )}
             </div>
             <div>
               <h3 className="text-2xl font-black text-[#5D4037] mb-1 font-hand">{profile.name}</h3>

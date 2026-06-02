@@ -22,6 +22,18 @@ const eeveePath = [
   { level: 96, species: 'glaceon', name: '冰伊布', icon: '❄️', type: '顶级终极 II', desc: '无敌防御 & 极寒美学', color: 'bg-[#E0F7FA]', border: 'border-[#00BCD4]' },
 ];
 
+const slimePath = [
+  { level: 1, species: 'slime_1', name: '初级史莱姆', icon: '💧', type: '初始形态', desc: '最喜欢抱抱的软萌团子', color: 'bg-gradient-to-b from-sky-300 to-sky-500', border: 'border-sky-300' },
+  { level: 21, species: 'slime_2', name: '水雾', icon: '🌫️', type: '水雾蜕变', desc: '融合纯净水雾，轻盈若隐', color: 'bg-gradient-to-b from-[#B2EBF2] via-[#00ACC1] to-[#00838F]', border: 'border-[#E0F7FA]' },
+  { level: 36, species: 'slime_3', name: '燃珠', icon: '🔮', type: '炽热凝聚', desc: '孕育具有炽热温度的生命核心', color: 'bg-gradient-to-b from-[#FFEE58] via-[#FFCA28] to-[#EF6C00]', border: 'border-yellow-200' },
+  { level: 46, species: 'slime_4', name: '熔岩', icon: '🌋', type: '地脉裂变', desc: '爆裂熔岩，流动炎浪', color: 'bg-gradient-to-b from-[#E64A19] via-[#BF360C] to-[#210400]', border: 'border-[#FF7043]' },
+  { level: 56, species: 'slime_5', name: '冰晶史', icon: '❄️', type: '剔透冰结', desc: '冷冽冰盾，晶莹剔透而坚毅', color: 'bg-gradient-to-b from-[#E0F7FA] via-[#4DD0E1] to-[#0288D1]', border: 'border-white' },
+  { level: 66, species: 'slime_6', name: '风刃', icon: '🌀', type: '急风切割', desc: '疾风为刃，优雅而高速穿梭', color: 'bg-gradient-to-b from-[#E0F2F1] via-[#26A69A] to-[#004D40]', border: 'border-[#80CBC4]' },
+  { level: 76, species: 'slime_7', name: '幽紫史', icon: '👾', type: '暗影魔力', desc: '弥漫深邃幽紫的神秘暗系形态', color: 'bg-gradient-to-b from-[#BA68C8] via-[#7B1FA2] to-[#311B92]', border: 'border-[#E1BEE7]' },
+  { level: 86, species: 'slime_8', name: '花叶史', icon: '🌸', type: '自然共生', desc: '凝聚万物春生，繁茂之绿', color: 'bg-gradient-to-b from-[#C8E6C9] via-[#4CAF50] to-[#1B5E20]', border: 'border-[#A5D6A7]' },
+  { level: 96, species: 'slime_9', name: '巨型综合体', icon: '🌟', type: '九合至尊', desc: '融合九种核心属性的究极主宰', color: 'bg-gradient-to-br from-[#F06292] via-[#E11D48] to-[#3B82F6]', border: 'border-[#F87171]' },
+];
+
 const bulbasaurPath = [
   { level: 1, species: 'bulbasaur', name: '妙蛙种子', icon: '🍃', type: '初始形态', desc: '开启冒险之旅', color: 'bg-[#E8F5E9]', border: 'border-[#81C784]' },
   { level: 21, species: 'ivysaur', name: '妙蛙草', icon: '🌺', type: '成长进化', desc: '花蕾正在绽放', color: 'bg-[#E0F2F1]', border: 'border-[#4DB6AC]' },
@@ -60,13 +72,52 @@ const pikachuPath = [
 ];
 
 export const EvolutionPreview: React.FC<EvolutionPreviewProps> = ({ isOpen, onClose, currentLevel, currentSpecies }) => {
+  const isSlimeFamily = currentSpecies === 'slime';
   const isBulbasaurFamily = ['bulbasaur', 'ivysaur', 'venusaur', 'venusaur_sky', 'mega_venusaur', 'zacian_forest', 'zarude', 'iron_leaves', 'virizion_god'].includes(currentSpecies);
   const isCharizardFamily = ['dragon', 'charmander', 'charizard', 'charmeleon', 'charizard_master', 'mega_charizard', 'mega_charizard_glow', 'gigantamax_charizard', 'charcadet', 'koraidon', 'gouging_fire'].includes(currentSpecies);
   const isPikachuFamily = ['pichu', 'pikachu', 'xuanjia_nine', 'raichu', 'wanleizun', 'leizhu', 'nulei', 'ranyuan_leidu', 'leimao_huanying', 'chuan_shuo_shen_qu'].includes(currentSpecies);
   
-  const currentPath = isPikachuFamily ? pikachuPath : isCharizardFamily ? charizardPath : isBulbasaurFamily ? bulbasaurPath : eeveePath;
-  const familyTitle = isPikachuFamily ? '天雷进化图谱' : isCharizardFamily ? '炽焰进化图谱' : isBulbasaurFamily ? '森罗进化图谱' : '伊布家族预览';
-  const headerColor = isPikachuFamily ? 'bg-[#FBC02D]' : isCharizardFamily ? 'bg-[#F4511E]' : isBulbasaurFamily ? 'bg-[#66BB6A]' : 'bg-[#4FC3F7]';
+  const getSlimeStageIndex = (level: number) => {
+    if (level <= 20) return 0;
+    if (level <= 35) return 1;
+    if (level <= 45) return 2;
+    if (level <= 55) return 3;
+    if (level <= 65) return 4;
+    if (level <= 75) return 5;
+    if (level <= 85) return 6;
+    if (level <= 95) return 7;
+    return 8;
+  };
+
+  const currentPath = isSlimeFamily
+    ? slimePath
+    : isPikachuFamily 
+      ? pikachuPath 
+      : isCharizardFamily 
+        ? charizardPath 
+        : isBulbasaurFamily 
+          ? bulbasaurPath 
+          : eeveePath;
+
+  const familyTitle = isSlimeFamily
+    ? '史莱姆蜕变进化图鉴'
+    : isPikachuFamily 
+      ? '天雷进化图谱' 
+      : isCharizardFamily 
+        ? '炽焰进化图谱' 
+        : isBulbasaurFamily 
+          ? '森罗进化图谱' 
+          : '伊布家族预览';
+
+  const headerColor = isSlimeFamily
+    ? 'bg-[#29B6F6]'
+    : isPikachuFamily 
+      ? 'bg-[#FBC02D]' 
+      : isCharizardFamily 
+        ? 'bg-[#F4511E]' 
+        : isBulbasaurFamily 
+          ? 'bg-[#66BB6A]' 
+          : 'bg-[#4FC3F7]';
 
   return (
     <AnimatePresence>
@@ -105,7 +156,9 @@ export const EvolutionPreview: React.FC<EvolutionPreviewProps> = ({ isOpen, onCl
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                 {currentPath.map((stage, index) => {
                   const isUnlocked = currentLevel >= stage.level;
-                  const isCurrent = currentSpecies === stage.species;
+                  const isCurrent = isSlimeFamily
+                    ? index === getSlimeStageIndex(currentLevel)
+                    : currentSpecies === stage.species;
                   const isFinal = index >= 7;
                   
                   return (
@@ -166,8 +219,10 @@ export const EvolutionPreview: React.FC<EvolutionPreviewProps> = ({ isOpen, onCl
                 <div className="bg-white p-3 rounded-2xl border-2 border-[#D7CCC8]">
                   <Trophy className="w-6 h-6 text-[#FFB300]" />
                 </div>
-                <p className="text-sm font-bold leading-tight">
-                  {isPikachuFamily ? "无与伦比的电属性力量！通过不断的学习与自律，积蓄雷鸣能量，终将蜕变为不可战胜的传说级神驱。" : isCharizardFamily ? "由于炽热的斗志，喷火龙家族将不断突破自我！每一步进化都预示着更强的火焰与力量。" : isBulbasaurFamily ? "释放森林的自然潜能！通过不断的学习与自律，妙蛙种子终将蜕变为森罗神武。" : "不断完成学习任务，积累经验值！每提升一级都离更强大的形态更近一步。"}
+                <p className="text-sm font-bold leading-tight flex-1">
+                  {isSlimeFamily 
+                    ? "通过不断的学习与自律，史莱姆将不断激发自身潜力，吸收大自然元素从而发生九合蜕变，终能成长为吞吐万物的至尊巨型综合体！"
+                    : isPikachuFamily ? "无与伦比的电属性力量！通过不断的学习与自律，积蓄雷鸣能量，终将蜕变为不可战胜的传说级神驱。" : isCharizardFamily ? "由于炽热的斗志，喷火龙家族将不断突破自我！每一步进化都预示着更强的火焰与力量。" : isBulbasaurFamily ? "释放森林的自然潜能！通过不断的学习与自律，妙蛙种子终将蜕变为森罗神武。" : "不断完成学习任务，积累经验值！每提升一级都离更强大的形态更近一步。"}
                 </p>
               </div>
             </div>
