@@ -103,9 +103,39 @@ const getSlimeStageName = (level: number): string => {
   return "巨型综合体";
 };
 
+const getRobotStageName = (level: number): string => {
+  if (level <= 20) return "旋律雏机 (初始态)";
+  if (level <= 35) return "萌动鸣姬 (成长期)";
+  if (level <= 45) return "节奏浪客 (滑行态)";
+  if (level <= 55) return "混奏极客 (DJ武装)";
+  if (level <= 65) return "震天重炮 (重音尊)";
+  if (level <= 75) return "暴风琴羽 (极光流)";
+  if (level <= 85) return "天籁绝音 (神圣姬)";
+  if (level <= 95) return "寰宇天乐尊 (神皇)";
+  return "禅宗琴梵神 (终焉造物主)";
+};
+
+const getCatStageName = (level: number): string => {
+  if (level <= 20) return "喵喵 (初始形态)";
+  if (level <= 35) return "猫大佬 (优雅蜕变)";
+  if (level <= 45) return "阿罗拉喵喵 (晶莹白雪)";
+  if (level <= 55) return "伽勒尔喵喵 (铁之意志)";
+  if (level <= 65) return "喵头目 (狂战士)";
+  if (level <= 75) return "超极巨·万金猫 (极巨之巅)";
+  if (level <= 85) return "雷冥猫 (透视金瞳)";
+  if (level <= 95) return "帝白金狮 (赫利奥斯)";
+  return "黄昏之鬃·奈克洛兹玛 (天光终焉)";
+};
+
 const getSpeciesDisplayName = (species: PetSpecies, level: number = 1): string => {
   if (species === 'slime') {
     return getSlimeStageName(level);
+  }
+  if (species === 'robot') {
+    return getRobotStageName(level);
+  }
+  if (species === 'cat' || species === 'meowth') {
+    return getCatStageName(level);
   }
   
   const mapping: Record<string, string> = {
@@ -1875,10 +1905,10 @@ export default function App() {
                     <button onClick={() => setIsEditingName(true)} className="p-2 text-[#D7CCC8] hover:text-[#FF7043] transition-colors" title="更改昵称">
                       <Edit2 className="w-5 h-5" />
                     </button>
-                    {(activeProfile.pet.species === 'slime' || EEVEE_FAMILY.includes(activeProfile.pet.species) || BULBASAUR_FAMILY.includes(activeProfile.pet.species) || CHARIZARD_FAMILY.includes(activeProfile.pet.species) || PIKACHU_FAMILY.includes(activeProfile.pet.species)) && (
+                     {(activeProfile.pet.species === 'slime' || activeProfile.pet.species === 'robot' || activeProfile.pet.species === 'cat' || activeProfile.pet.species === 'meowth' || EEVEE_FAMILY.includes(activeProfile.pet.species) || BULBASAUR_FAMILY.includes(activeProfile.pet.species) || CHARIZARD_FAMILY.includes(activeProfile.pet.species) || PIKACHU_FAMILY.includes(activeProfile.pet.species)) && (
                       <button 
                         onClick={() => setShowEvolutionPreview(true)}
-                        className={`ml-2 flex items-center gap-1 px-3 py-1 ${activeProfile.pet.species === 'slime' ? 'bg-[#29B6F6]' : BULBASAUR_FAMILY.includes(activeProfile.pet.species) ? 'bg-[#66BB6A]' : CHARIZARD_FAMILY.includes(activeProfile.pet.species) ? 'bg-[#F4511E]' : PIKACHU_FAMILY.includes(activeProfile.pet.species) ? 'bg-[#FBC02D]' : 'bg-[#4FC3F7]'} text-white rounded-full text-xs font-black border-2 border-[#5D4037] shadow-[2px_2px_0px_#5D4037] hover:translate-y-[-1px] active:translate-y-[1px] active:shadow-none transition-all`}
+                        className={`ml-2 flex items-center gap-1 px-3 py-1 ${activeProfile.pet.species === 'slime' ? 'bg-[#29B6F6]' : activeProfile.pet.species === 'robot' ? 'bg-[#7E57C2]' : (activeProfile.pet.species === 'cat' || activeProfile.pet.species === 'meowth') ? 'bg-[#FFA726]' : BULBASAUR_FAMILY.includes(activeProfile.pet.species) ? 'bg-[#66BB6A]' : CHARIZARD_FAMILY.includes(activeProfile.pet.species) ? 'bg-[#F4511E]' : PIKACHU_FAMILY.includes(activeProfile.pet.species) ? 'bg-[#FBC02D]' : 'bg-[#4FC3F7]'} text-white rounded-full text-xs font-black border-2 border-[#5D4037] shadow-[2px_2px_0px_#5D4037] hover:translate-y-[-1px] active:translate-y-[1px] active:shadow-none transition-all`}
                       >
                         <Sparkles className="w-3 h-3" />
                         进化预览

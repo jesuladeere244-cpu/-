@@ -480,6 +480,396 @@ const getSlimeStageConfig = (level: number = 1) => {
   }
 };
 
+const getCatStageConfig = (level: number = 1) => {
+  if (level <= 20) {
+    return {
+      name: '喵喵',
+      pokemonId: 52,
+      color: 'bg-gradient-to-b from-[#FFFDF0] via-[#FFF9C4] to-[#FFE082]',
+      radius: 'rounded-[1.5rem]',
+      border: 'border-[#FFB300] shadow-[0_0_20px_rgba(255,179,0,0.5)]',
+      element: (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-[inherit]">
+          {/* Sassy floating coins */}
+          <motion.div 
+            animate={{ y: [0, -6, 0] }} 
+            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }} 
+            className="absolute top-2 right-4 text-sm"
+          >
+            🪙
+          </motion.div>
+          <motion.div 
+            animate={{ y: [0, -8, 0] }} 
+            transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }} 
+            className="absolute bottom-4 left-4 text-sm"
+          >
+            🪙
+          </motion.div>
+        </div>
+      )
+    };
+  } else if (level <= 35) {
+    return {
+      name: '猫大佬',
+      pokemonId: 53,
+      color: 'bg-gradient-to-b from-[#FFFDE7] via-[#FFF59D] to-[#FFF176]',
+      radius: 'rounded-[2rem]',
+      border: 'border-[#FFF176] shadow-[0_0_30px_rgba(255,241,118,0.6)]',
+      element: (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-[inherit]">
+          {/* Glowing ruby crown vibe */}
+          <div className="absolute top-1/2 left-3 w-2.5 h-2.5 bg-red-500 rounded-full animate-ping" />
+          <div className="absolute top-3 right-3 text-lg animate-pulse">✨</div>
+        </div>
+      )
+    };
+  } else if (level <= 45) {
+    return {
+      name: '阿罗拉喵喵',
+      pokemonId: 10103, // Alolan Vulpix styling matching user image 6
+      color: 'bg-gradient-to-b from-[#E0F7FA] via-[#B2EBF2] to-[#80DEEA]',
+      radius: 'rounded-[2.5rem]',
+      border: 'border-[#4DD0E1] shadow-[0_0_35px_rgba(77,208,225,0.7)]',
+      element: (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-[inherit]">
+          {/* Whimsical drifting snow flakes */}
+          <div className="absolute top-3 left-4 text-sm animate-bounce text-cyan-400">❄️</div>
+          <div className="absolute bottom-4 right-4 text-sm animate-pulse text-cyan-200">❄️</div>
+        </div>
+      )
+    };
+  } else if (level <= 55) {
+    return {
+      name: '伽勒尔喵喵 (钢钢)',
+      pokemonId: 10161,
+      color: 'bg-gradient-to-b from-[#90A4AE] via-[#607D8B] to-[#37474F]',
+      radius: 'rounded-[1.75rem]',
+      border: 'border-[#B0BEC5] shadow-[0_0_25px_rgba(144,164,174,0.6)]',
+      element: (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-[inherit]">
+          {/* Iron spikes / screws */}
+          <div className="absolute top-3 left-3 text-sm opacity-50">🔩</div>
+          <div className="absolute bottom-3 right-3 text-sm opacity-50">🔩</div>
+        </div>
+      )
+    };
+  } else if (level <= 65) {
+    return {
+      name: '喵头目 (狂战士)',
+      pokemonId: 863,
+      color: 'bg-gradient-to-b from-[#455A64] via-[#37474F] to-[#212121]',
+      radius: 'rounded-[1.85rem]',
+      border: 'border-[#78909C] shadow-[0_0_35px_rgba(33,33,33,0.9)]',
+      element: (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-[inherit] bg-red-950/15">
+          {/* Viking steel axes */}
+          <div className="absolute -top-1 left-2 text-xl drop-shadow">⚔️</div>
+          <div className="absolute -top-1 right-2 text-xl drop-shadow">⚔️</div>
+        </div>
+      )
+    };
+  } else if (level <= 75) {
+    return {
+      name: '超极巨·万金猫',
+      pokemonId: 892, // Urshifu style image 7
+      color: 'bg-gradient-to-b from-[#FFF59D] via-[#FBC02D] to-[#E65100]',
+      radius: 'rounded-[2.85rem]',
+      border: 'border-[#FFA726] shadow-[0_0_45px_rgba(251,192,45,0.85)]',
+      element: (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-[inherit]">
+          {/* Dynamic boxing and wealth cloud aura */}
+          <motion.div 
+            animate={{ rotate: -360 }} 
+            transition={{ duration: 12, repeat: Infinity, ease: 'linear' }} 
+            className="absolute -inset-8 border-4 border-dashed border-red-500/20 rounded-full"
+          />
+          <div className="absolute top-3 left-4 text-xl">🥋</div>
+          <div className="absolute bottom-3 right-4 text-xl animate-bounce">👊</div>
+        </div>
+      )
+    };
+  } else if (level <= 85) {
+    return {
+      name: '雷冥猫 (透视金瞳)',
+      pokemonId: 405, // Luxray match image 2
+      color: 'bg-gradient-to-b from-[#1A237E] via-[#0D47A1] to-[#121212]',
+      radius: 'rounded-[2.25rem]',
+      border: 'border-[#448AFF] shadow-[0_0_40px_rgba(68,138,255,0.85)]',
+      element: (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-[inherit]">
+          {/* Neon electric particles */}
+          <div className="absolute top-2 left-1/2 -translate-x-1/2 text-yellow-400 animate-pulse text-lg">⚡</div>
+          <motion.div 
+            animate={{ opacity: [0.3, 0.8, 0.3], scale: [0.95, 1.05, 0.95] }}
+            transition={{ duration: 1, repeat: Infinity }}
+            className="absolute inset-0 border-2 border-cyan-400/20 rounded-[inherit]"
+          />
+          <div className="absolute bottom-2 left-4 text-[8px] font-mono text-cyan-300 tracking-wider">瞳术·透视金瞳</div>
+        </div>
+      )
+    };
+  } else if (level <= 95) {
+    return {
+      name: '帝白金狮 (赫利奥斯)',
+      pokemonId: 791, // Solgaleo match image 8
+      color: 'bg-gradient-to-b from-[#FFFFFF] via-[#ECEFF1] to-[#B0BEC5]',
+      radius: 'rounded-[3rem]',
+      border: 'border-[#FFA000] shadow-[0_0_50px_rgba(255,160,0,0.95)]',
+      element: (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-[inherit]">
+          {/* Sun solar flares */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-5xl opacity-15">🌞</div>
+          <div className="absolute bottom-3 left-4 text-sm animate-pulse">🦁</div>
+          <div className="absolute top-3 right-4 text-xs font-black text-amber-600">HELIOS</div>
+        </div>
+      )
+    };
+  } else {
+    return {
+      name: '黄昏之鬃·奈克洛兹玛 (天光终焉)',
+      pokemonId: 10155, // Dusk Mane Necrozma match image 1
+      color: 'bg-gradient-to-br from-[#121212] via-[#212121] to-[#000000]',
+      radius: 'rounded-[2.5rem]',
+      border: 'border-[#E11D48] shadow-[0_0_55px_rgba(240,98,146,0.6),_0_0_30px_rgba(225,29,72,0.4)]',
+      element: (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-[inherit]">
+          {/* Dark stars & neon solar flare outline */}
+          <div className="absolute top-2 left-3 text-lg animate-ping text-[#F06292]">🌟</div>
+          <div className="absolute bottom-3 right-4 text-[9px] font-mono font-black text-rose-500 tracking-wider">天光终焉</div>
+        </div>
+      )
+    };
+  }
+};
+
+const getRobotStageConfig = (level: number = 1) => {
+  // 1-20级：旋律雏机 (初始态)
+  if (level <= 20) {
+    return {
+      name: '旋律雏机 (初始态)',
+      image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/479.png',
+      color: 'bg-gradient-to-b from-[#ECEFF1] via-[#D1C4E9] to-[#9575CD]',
+      radius: 'rounded-[3rem]',
+      border: 'border-[#673AB7] shadow-[0_0_20px_rgba(103,58,183,0.35)]',
+      element: (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-[inherit]">
+          {/* Subtle audio pulses */}
+          <motion.div
+            animate={{ scale: [1, 1.15, 1], opacity: [0.35, 0.7, 0.35], rotate: [0, 10, -10, 0] }}
+            transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+            className="absolute -inset-4 bg-purple-400/10 rounded-full blur-xl -z-10"
+          />
+          <span className="absolute bottom-3 left-4 text-xs">🔈</span>
+          <span className="absolute bottom-3 right-4 text-xs">🔊</span>
+        </div>
+      )
+    };
+  }
+  // 21-35级：萌动鸣姬 (成长期)
+  else if (level <= 35) {
+    return {
+      name: '萌动鸣姬 (成长期)',
+      image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/648.png',
+      color: 'bg-gradient-to-b from-[#E1F5FE] via-[#B2EBF2] to-[#4DD0E1]',
+      radius: 'rounded-[3.2rem]',
+      border: 'border-[#00ACC1] shadow-[0_0_25px_rgba(0,172,193,0.45)]',
+      element: (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-[inherit]">
+          <motion.span
+            animate={{ y: [0, -15, 0], opacity: [0, 1, 0], scale: [0.8, 1.2, 0.8] }}
+            transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+            className="absolute top-2 left-6 text-lg"
+          >
+            🎵
+          </motion.span>
+          <motion.span
+            animate={{ y: [0, -20, 0], opacity: [0, 1, 0], scale: [0.8, 1.2, 0.8] }}
+            transition={{ duration: 3, repeat: Infinity, delay: 1, ease: 'easeInOut' }}
+            className="absolute top-4 right-8 text-lg"
+          >
+            💿
+          </motion.span>
+        </div>
+      )
+    };
+  }
+  // 36-45级：节奏浪客 (滑行态)
+  else if (level <= 45) {
+    return {
+      name: '节奏浪客 (滑行态)',
+      image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/807.png',
+      color: 'bg-gradient-to-b from-[#004D40] via-[#00796B] to-[#009688]',
+      radius: 'rounded-[2.8rem]',
+      border: 'border-[#009688] shadow-[0_0_30px_rgba(0,150,136,0.55)]',
+      element: (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-[inherit]">
+          {/* Cyber surfing wind effects */}
+          <div className="absolute bottom-2 left-1/4 right-1/4 h-1 bg-cyan-300 rounded-full blur-[1px]" />
+          <motion.div
+            animate={{ x: [-8, 8, -8], scaleX: [1, 1.2, 1] }}
+            transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
+            className="absolute bottom-4 left-6 text-sm"
+          >
+            💨
+          </motion.div>
+        </div>
+      )
+    };
+  }
+  // 46-55级：混奏极客 (DJ武装)
+  else if (level <= 55) {
+    return {
+      name: '混奏极客 (DJ武装)',
+      image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/849.png',
+      color: 'bg-gradient-to-b from-[#1A237E] via-[#311B92] to-[#4A148C]',
+      radius: 'rounded-[2.4rem]',
+      border: 'border-[#BA68C8] shadow-[0_0_35px_rgba(186,104,200,0.65)]',
+      element: (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-[inherit]">
+          {/* Neon equalizers and lasers */}
+          <motion.div
+            animate={{ opacity: [0.15, 0.75, 0.15] }}
+            transition={{ duration: 1.5, repeat: Infinity }}
+            className="absolute top-0 left-12 w-[2px] h-full bg-gradient-to-b from-transparent via-cyan-400 to-transparent rotate-[15deg] blur-[0.5px]"
+          />
+          <motion.div
+            animate={{ opacity: [0.1, 0.65, 0.1] }}
+            transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+            className="absolute top-0 right-12 w-[2px] h-full bg-gradient-to-b from-transparent via-pink-400 to-transparent -rotate-[15deg] blur-[0.5px]"
+          />
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 text-[10px] text-purple-300 font-mono tracking-widest whitespace-nowrap">DJ GEAR UP</div>
+        </div>
+      )
+    };
+  }
+  // 56-65级：震天重炮 (重音尊)
+  else if (level <= 65) {
+    return {
+      name: '震天重炮 (重音尊)',
+      image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/649.png',
+      color: 'bg-gradient-to-b from-[#212121] via-[#1E3A8A] to-[#3B82F6]',
+      radius: 'rounded-[2rem]',
+      border: 'border-[#3B82F6] shadow-[0_0_40px_rgba(59,130,246,0.7)]',
+      element: (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-[inherit]">
+          {/* Subwoofer Bass Blast Rings */}
+          <motion.div
+            animate={{ scale: [1, 2.2, 1], opacity: [0.6, 0, 0.6] }}
+            transition={{ duration: 1, repeat: Infinity, ease: 'easeOut' }}
+            className="absolute top-6 left-6 w-10 h-10 border-2 border-cyan-300 rounded-full blur-[1px]"
+          />
+          <motion.div
+            animate={{ scale: [1, 2.2, 1], opacity: [0.6, 0, 0.6] }}
+            transition={{ duration: 1, repeat: Infinity, delay: 0.3, ease: 'easeOut' }}
+            className="absolute top-6 right-6 w-10 h-10 border-2 border-cyan-300 rounded-full blur-[1px]"
+          />
+        </div>
+      )
+    };
+  }
+  // 66-75级：暴风琴羽 (极光流)
+  else if (level <= 75) {
+    return {
+      name: '暴风琴羽 (极光流)',
+      image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1008.png',
+      color: 'bg-gradient-to-b from-[#006064] via-[#0097A7] to-[#80DEEA]',
+      radius: 'rounded-[1.6rem]',
+      border: 'border-[#4DD0E1] shadow-[0_0_45px_rgba(77,208,225,0.85)]',
+      element: (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-[inherit]">
+          {/* Equalizer Wave Visualizer Bars */}
+          <div className="absolute bottom-2 left-6 right-6 flex justify-between h-5 items-end gap-0.5">
+            {[...Array(12)].map((_, i) => (
+              <motion.div
+                key={i}
+                animate={{ height: [3, Math.random() * 15 + 4, 3] }}
+                transition={{ duration: 0.4 + Math.random() * 0.4, repeat: Infinity }}
+                className="w-1 bg-cyan-300/50 rounded-t-xs"
+              />
+            ))}
+          </div>
+        </div>
+      )
+    };
+  }
+  // 76-85级:天籁绝音 (神圣姬)
+  else if (level <= 85) {
+    return {
+      name: '天籁绝音 (神圣姬)',
+      image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/801.png',
+      color: 'bg-gradient-to-b from-[#FCE4EC] via-[#F8BBD0] to-[#E91E63]',
+      radius: 'rounded-[3.8rem]',
+      border: 'border-[#E91E63] shadow-[0_0_50px_rgba(233,30,99,0.75)]',
+      element: (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-[inherit]">
+          {/* Angelic stars and halo */}
+          <motion.div
+            animate={{ y: [-3, 3, -3] }}
+            transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+            className="absolute top-2 left-1/4 right-1/4 h-2 bg-yellow-300/40 rounded-full blur-[2px]"
+          />
+          <motion.span
+            animate={{ scale: [1, 1.3, 1], opacity: [0.4, 0.9, 0.4] }}
+            transition={{ duration: 2, repeat: Infinity }}
+            className="absolute top-4 left-4 text-xs"
+          >
+            ✨
+          </motion.span>
+          <motion.span
+            animate={{ scale: [1, 1.3, 1], opacity: [0.4, 0.9, 0.4], delay: 1 }}
+            transition={{ duration: 2, repeat: Infinity }}
+            className="absolute top-4 right-4 text-xs"
+          >
+            ✨
+          </motion.span>
+        </div>
+      )
+    };
+  }
+  // 86-95级：寰宇天乐尊 (神皇）
+  else if (level <= 95) {
+    return {
+      name: '寰宇天乐尊 (神皇)',
+      image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/493.png',
+      color: 'bg-gradient-to-b from-[#0D47A1] via-[#1A237E] to-[#4A148C]',
+      radius: 'rounded-[50%/35%_35%_48%_48%]',
+      border: 'border-[#FFD54F] shadow-[0_0_55px_rgba(255,213,79,0.95),_0_0_20px_rgba(255,213,79,0.4)]',
+      element: (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-[inherit]">
+          {/* Space nebulae and cosmic glitter */}
+          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-50" />
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 15, repeat: Infinity, ease: 'linear' }}
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 border border-white/5 border-dashed rounded-full -z-10"
+          />
+        </div>
+      )
+    };
+  }
+  // 96-100级：禅宗琴梵神 (终焉造物主)
+  else {
+    return {
+      name: '禅宗琴梵神 (终焉造物主)',
+      image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10156.png',
+      color: 'bg-gradient-to-b from-[#212121] via-[#EDC435] to-[#FFE082]',
+      radius: 'rounded-[12rem_12rem_6rem_6rem/8rem_8rem_5rem_5rem]',
+      border: 'border-[#FFB300] shadow-[0_0_65px_rgba(255,179,0,1)] ring-4 ring-[#FFD54F]/20',
+      element: (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-[inherit]">
+          {/* God Aura and rotating circles */}
+          <motion.div
+            animate={{ scale: [0.98, 1.12, 0.98], opacity: [0.5, 0.85, 0.5] }}
+            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+            className="absolute inset-0 bg-yellow-400/10 rounded-[inherit] blur-2xl"
+          />
+          <span className="absolute top-2 left-1/2 -translate-x-1/2 text-sm drop-shadow-[0_0_10px_gold]">🌟 无上绝伦 🌟</span>
+        </div>
+      )
+    };
+  }
+};
+
 export const PetDisplay: React.FC<PetDisplayProps> = ({ 
   species, 
   stage, 
@@ -669,15 +1059,52 @@ export const PetDisplay: React.FC<PetDisplayProps> = ({
     dragon: 4
   };
 
-  const isPokemon = species in pokemonIds;
+  const isPokemon = species in pokemonIds || species === 'cat' || species === 'meowth';
+  const isImageBased = isPokemon || species === 'robot';
+  const pokeId = (species === 'cat' || species === 'meowth') 
+    ? getCatStageConfig(level).pokemonId 
+    : pokemonIds[species];
 
   const current = config[stage as keyof typeof config] || config.mythical;
   const currentSpecies = speciesConfig[species];
 
+  let displaySize = current.size;
+  if (isImageBased) {
+    if (stage === 'baby') displaySize = 'w-44 h-44 md:w-48 md:h-48';
+    else if (stage === 'child') displaySize = 'w-48 h-48 md:w-52 md:h-52';
+    else if (stage === 'teen') displaySize = 'w-52 h-52 md:w-56 md:h-56';
+    else if (stage === 'adult') displaySize = 'w-56 h-56 md:w-60 md:h-60';
+    else if (stage === 'legendary') displaySize = 'w-60 h-60 md:w-64 md:h-64';
+    else displaySize = 'w-68 h-68 md:w-72 md:h-72';
+  }
+
   const slimeStageConfig = species === 'slime' ? getSlimeStageConfig(level) : null;
-  const petColor = slimeStageConfig ? slimeStageConfig.color : currentSpecies.color;
-  const petRadius = slimeStageConfig ? slimeStageConfig.radius : currentSpecies.radius;
-  const petBorder = slimeStageConfig ? slimeStageConfig.border : currentSpecies.border;
+  const catStageConfig = (species === 'cat' || species === 'meowth') ? getCatStageConfig(level) : null;
+  const robotStageConfig = species === 'robot' ? getRobotStageConfig(level) : null;
+  
+  const petColor = slimeStageConfig 
+    ? slimeStageConfig.color 
+    : (catStageConfig 
+      ? catStageConfig.color 
+      : (robotStageConfig 
+        ? robotStageConfig.color 
+        : currentSpecies.color));
+    
+  const petRadius = slimeStageConfig 
+    ? slimeStageConfig.radius 
+    : (catStageConfig 
+      ? catStageConfig.radius 
+      : (robotStageConfig 
+        ? robotStageConfig.radius 
+        : currentSpecies.radius));
+    
+  const petBorder = slimeStageConfig 
+    ? slimeStageConfig.border 
+    : (catStageConfig 
+      ? catStageConfig.border 
+      : (robotStageConfig 
+        ? robotStageConfig.border 
+        : currentSpecies.border));
 
   return (
     <div className="relative flex flex-col items-center justify-center p-12">
@@ -950,31 +1377,33 @@ export const PetDisplay: React.FC<PetDisplayProps> = ({
         }}
         className={cn(
           "relative shadow-[0_20px_50px_rgba(0,0,0,0.1)] flex items-center justify-center transition-all duration-1000 border-4",
-          current.size,
+          displaySize,
           petColor,
           petRadius,
           petBorder,
           isHungry && "brightness-90 saturate-50",
           isDirty && "opacity-80",
-          isPokemon && "bg-white/40 border-dashed"
+          (isImageBased && species !== 'cat' && species !== 'meowth' && species !== 'robot') && "bg-white/40 border-dashed"
         )}
       >
-        {isPokemon ? (
-          <div className="relative w-full h-full flex items-center justify-center p-4">
+        {isImageBased ? (
+          <div className="relative w-full h-full flex items-center justify-center p-3">
+            {catStageConfig?.element}
+            {robotStageConfig?.element}
             <img 
-              src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemonIds[species]}.png`}
+              src={species === 'robot' ? robotStageConfig?.image : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokeId}.png`}
               alt={species}
               className={cn(
-                "w-full h-full object-contain drop-shadow-xl",
+                "w-full h-full object-contain drop-shadow-xl z-10",
                 activeAction === 'sleeping' && "grayscale brightness-50"
               )}
               referrerPolicy="no-referrer"
             />
-            {/* Pokemon Specific Overlays */}
+            {/* Image-based Pet Specific Overlays */}
             {activeAction === 'feeding' && (
               <motion.div 
                 animate={{ scale: [1, 1.2, 1] }}
-                className="absolute -top-4 text-4xl"
+                className="absolute -top-4 text-4xl z-30"
               >
                 😋
               </motion.div>

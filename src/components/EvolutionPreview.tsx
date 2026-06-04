@@ -10,6 +10,65 @@ interface EvolutionPreviewProps {
   currentSpecies: PetSpecies;
 }
 
+const previewPokemonIds: Record<string, number> = {
+  // Eevee family
+  eevee: 133,
+  vaporeon: 134,
+  jolteon: 135,
+  flareon: 136,
+  espeon: 196,
+  umbreon: 197,
+  sylveon: 700,
+  leafeon: 470,
+  glaceon: 471,
+
+  // Bulbasaur family
+  bulbasaur: 1,
+  ivysaur: 2,
+  venusaur: 3,
+  venusaur_sky: 3,
+  mega_venusaur: 10033,
+  zacian_forest: 888,
+  zarude: 893,
+  iron_leaves: 1010,
+  virizion_god: 640,
+
+  // Charizard family
+  charmander: 4,
+  charmeleon: 5,
+  charizard_master: 6,
+  mega_charizard: 10034,
+  mega_charizard_glow: 10035,
+  gigantamax_charizard: 10196,
+  charcadet: 935,
+  koraidon: 1007,
+  gouging_fire: 1020,
+  dragon: 4,
+
+  // Pikachu family
+  pichu: 172,
+  pikachu: 25,
+  xuanjia_nine: 801,
+  raichu: 26,
+  wanleizun: 10190,
+  leizhu: 894,
+  nulei: 10100,
+  ranyuan_leidu: 849,
+  leimao_huanying: 807,
+  chuan_shuo_shen_qu: 1008,
+
+  // Cat family (mapping to respective meowth/persian pokeIds)
+  cat_1: 52, // Meowth
+  cat_2: 53, // Persian
+  cat_3: 10103, // Alolan Meowth or Alolan Vulpix
+  cat_4: 10161, // Galarian Meowth
+  cat_5: 863, // Perrserker
+  cat_6: 10199, // Gigantamax Meowth
+  cat_7: 807, // Zeraora (fitting the electro description!)
+  cat_8: 791, // Solgaleo (fitting the lion helios description!)
+  cat_9: 792, // Dawn Wings / Dusk Mane (fitting Dusk Mane Necrozma!)
+};
+
 const eeveePath = [
   { level: 1, species: 'eevee', name: '伊布', icon: '🦊', type: '初始形态', desc: '开启你的冒险之旅', color: 'bg-[#EFEBE9]', border: 'border-[#A1887F]' },
   { level: 21, species: 'vaporeon', name: '水伊布', icon: '💧', type: '水系进化', desc: '身体结构能融入水中', color: 'bg-[#E3F2FD]', border: 'border-[#2196F3]' },
@@ -71,11 +130,37 @@ const pikachuPath = [
   { level: 96, species: 'chuan_shuo_shen_qu', name: '传说版神驱', icon: '🏍️', type: '终极传说级', desc: '持脚电光的超光速神驱', color: 'bg-[#EDE7F6]', border: 'border-[#9575CD]' },
 ];
 
+const catPath = [
+  { level: 1, species: 'cat_1', name: '喵喵', icon: '🐱', type: '初始形态', desc: '喜欢闪亮东西的财运好奇喵喵', color: 'bg-gradient-to-b from-[#FFFDF0] via-[#FFF9C4] to-[#FFE082]', border: 'border-[#FFB300]' },
+  { level: 21, species: 'cat_2', name: '猫大佬', icon: '🐈', type: '优雅蜕变', desc: '身姿优雅，额头镶嵌熠熠生辉的红宝石', color: 'bg-gradient-to-b from-[#FFFDE7] via-[#FFF59D] to-[#FFF176]', border: 'border-[#FFF176]' },
+  { level: 36, species: 'cat_3', name: '阿罗拉喵喵', icon: '❄️', type: '晶莹白雪', desc: '白雪幻境之章，高傲冷艳的寒冰喵', color: 'bg-gradient-to-b from-[#E0F7FA] via-[#B2EBF2] to-[#80DEEA]', border: 'border-[#4DD0E1]' },
+  { level: 46, species: 'cat_4', name: '伽勒尔喵喵 (钢钢)', icon: '🔩', type: '铁之意志', desc: '拥有硬化钢铁之躯的狂野钢钢猫', color: 'bg-gradient-to-b from-[#90A4AE] via-[#607D8B] to-[#37474F]', border: 'border-[#B0BEC5]' },
+  { level: 56, species: 'cat_5', name: '喵头目 (狂战士)', icon: '⚔️', type: '狂野熔炼', desc: '留着浓密大胡子的维京狂战士喵', color: 'bg-gradient-to-b from-[#455A64] via-[#37474F] to-[#212121]', border: 'border-[#78909C]' },
+  { level: 66, species: 'cat_6', name: '超极巨·万金猫', icon: '🥋', type: '极巨之巅', desc: '身躯宛如巨塔，举手投足尽显万金霸气', color: 'bg-gradient-to-b from-[#FFF59D] via-[#FBC02D] to-[#E65100]', border: 'border-[#FFA726]' },
+  { level: 76, species: 'cat_7', name: '雷冥猫 (透视金瞳)', icon: '⚡', type: '雷电视界', desc: '黑蓝相间，拥有能看穿万物透视金瞳的雷霆圣兽', color: 'bg-gradient-to-b from-[#1A237E] via-[#0D47A1] to-[#121212]', border: 'border-[#448AFF]' },
+  { level: 86, species: 'cat_8', name: '帝白金狮 (赫利奥斯)', icon: '🦁', type: '烈日雄狮', desc: '吞噬太阳、代表日光之终极主宰的白金雄狮', color: 'bg-gradient-to-b from-[#FFFFFF] via-[#ECEFF1] to-[#B0BEC5]', border: 'border-[#FFA000]' },
+  { level: 96, species: 'cat_9', name: '黄昏之鬃·奈克洛兹玛 (天光终焉)', icon: '🌟', type: '晶曜黑铠', desc: '主宰天光终焉的晶曜黑铠终极大主宰', color: 'bg-gradient-to-br from-[#121212] via-[#212121] to-[#000000]', border: 'border-[#E11D48]' },
+];
+
+const robotPath = [
+  { level: 1, species: 'robot_1', name: '旋律雏机', icon: '🤖', type: '初始态(1-20)', desc: '初生的电子音律雏形，对世界充满好奇的可爱耳机机器人', color: 'bg-gradient-to-b from-[#ECEFF1] via-[#D1C4E9] to-[#9575CD]', border: 'border-[#673AB7]', image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/479.png' },
+  { level: 21, species: 'robot_2', name: '萌动鸣姬', icon: '👧', type: '成长期(21-35)', desc: '欢跃灵动的歌姬雏形，背后悬浮乐音光带翩然起舞', color: 'bg-gradient-to-b from-[#E1F5FE] via-[#B2EBF2] to-[#4DD0E1]', border: 'border-[#00ACC1]', image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/648.png' },
+  { level: 36, species: 'robot_3', name: '节奏浪客', icon: '🛹', type: '滑行态(36-45)', desc: '脚踩磁悬浮滑轮浪板，肩托音箱高能穿街过巷', color: 'bg-gradient-to-b from-[#004D40] via-[#00796B] to-[#009688]', border: 'border-[#009688]', image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/807.png' },
+  { level: 46, species: 'robot_4', name: '混奏极客', icon: '🎧', type: 'DJ武装(46-55)', desc: '掌控多臂霓虹电音唱机，炫彩极光斑斓引爆舞池', color: 'bg-gradient-to-b from-[#1A237E] via-[#311B92] to-[#4A148C]', border: 'border-[#BA68C8]', image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/849.png' },
+  { level: 56, species: 'robot_5', name: '震天重炮', icon: '📢', type: '重音尊(56-65)', desc: '背负超大次声炮筒，重低音音波能量撼天震地', color: 'bg-gradient-to-b from-[#212121] via-[#1E3A8A] to-[#3B82F6]', border: 'border-[#3B82F6]', image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/649.png' },
+  { level: 66, species: 'robot_6', name: '暴风琴羽', icon: '🪶', type: '极光流(66-75)', desc: '肩生幽蓝音谱钢羽，在漫天声波极光中穿梭飞翔', color: 'bg-gradient-to-b from-[#006064] via-[#0097A7] to-[#80DEEA]', border: 'border-[#4DD0E1]', image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1008.png' },
+  { level: 76, species: 'robot_7', name: '天籁绝音', icon: '👼', type: '神圣姬(76-85)', desc: '圣光笼罩的机械天使，纯白光羽编织高洁星光竖琴', color: 'bg-gradient-to-b from-[#FCE4EC] via-[#F8BBD0] to-[#E91E63]', border: 'border-[#E91E63]', image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/801.png' },
+  { level: 86, species: 'robot_8', name: '寰宇天乐尊', icon: '👑', type: '神皇(86-95)', desc: '群星环伺、星系扬声器圆环环绕的主宰之皇', color: 'bg-gradient-to-b from-[#0D47A1] via-[#1A237E] to-[#4A148C]', border: 'border-[#FFD54F]', image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/493.png' },
+  { level: 96, species: 'robot_9', name: '禅宗琴梵神', icon: '☸️', type: '终焉造物主(96-100)', desc: '金光万道的万佛禅宗琴梵造物主，抚琴创世开辟寰宇', color: 'bg-gradient-to-b from-[#212121] via-[#EDC435] to-[#FFE082]', border: 'border-[#FFB300]', image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10156.png' },
+];
+
 export const EvolutionPreview: React.FC<EvolutionPreviewProps> = ({ isOpen, onClose, currentLevel, currentSpecies }) => {
   const isSlimeFamily = currentSpecies === 'slime';
   const isBulbasaurFamily = ['bulbasaur', 'ivysaur', 'venusaur', 'venusaur_sky', 'mega_venusaur', 'zacian_forest', 'zarude', 'iron_leaves', 'virizion_god'].includes(currentSpecies);
   const isCharizardFamily = ['dragon', 'charmander', 'charizard', 'charmeleon', 'charizard_master', 'mega_charizard', 'mega_charizard_glow', 'gigantamax_charizard', 'charcadet', 'koraidon', 'gouging_fire'].includes(currentSpecies);
   const isPikachuFamily = ['pichu', 'pikachu', 'xuanjia_nine', 'raichu', 'wanleizun', 'leizhu', 'nulei', 'ranyuan_leidu', 'leimao_huanying', 'chuan_shuo_shen_qu'].includes(currentSpecies);
+  const isCatFamily = ['cat', 'meowth'].includes(currentSpecies);
+  const isRobotFamily = currentSpecies === 'robot';
   
   const getSlimeStageIndex = (level: number) => {
     if (level <= 20) return 0;
@@ -89,35 +174,71 @@ export const EvolutionPreview: React.FC<EvolutionPreviewProps> = ({ isOpen, onCl
     return 8;
   };
 
+  const getCatStageIndex = (level: number) => {
+    if (level <= 20) return 0;
+    if (level <= 35) return 1;
+    if (level <= 45) return 2;
+    if (level <= 55) return 3;
+    if (level <= 65) return 4;
+    if (level <= 75) return 5;
+    if (level <= 85) return 6;
+    if (level <= 95) return 7;
+    return 8;
+  };
+
+  const getRobotStageIndex = (level: number) => {
+    if (level <= 20) return 0;
+    if (level <= 35) return 1;
+    if (level <= 45) return 2;
+    if (level <= 55) return 3;
+    if (level <= 65) return 4;
+    if (level <= 75) return 5;
+    if (level <= 85) return 6;
+    if (level <= 95) return 7;
+    return 8;
+  };
+
   const currentPath = isSlimeFamily
     ? slimePath
-    : isPikachuFamily 
-      ? pikachuPath 
-      : isCharizardFamily 
-        ? charizardPath 
-        : isBulbasaurFamily 
-          ? bulbasaurPath 
-          : eeveePath;
+    : isCatFamily
+      ? catPath
+      : isRobotFamily
+        ? robotPath
+        : isPikachuFamily 
+          ? pikachuPath 
+          : isCharizardFamily 
+            ? charizardPath 
+            : isBulbasaurFamily 
+              ? bulbasaurPath 
+              : eeveePath;
 
   const familyTitle = isSlimeFamily
     ? '史莱姆蜕变进化图鉴'
-    : isPikachuFamily 
-      ? '天雷进化图谱' 
-      : isCharizardFamily 
-        ? '炽焰进化图谱' 
-        : isBulbasaurFamily 
-          ? '森罗进化图谱' 
-          : '伊布家族预览';
+    : isCatFamily
+      ? '好奇猫·神圣进化图鉴'
+      : isRobotFamily
+        ? '电音雏机·科幻进化图谱'
+        : isPikachuFamily 
+          ? '天雷进化图谱' 
+          : isCharizardFamily 
+            ? '炽焰进化图谱' 
+            : isBulbasaurFamily 
+              ? '森罗进化图谱' 
+              : '伊布家族预览';
 
   const headerColor = isSlimeFamily
     ? 'bg-[#29B6F6]'
-    : isPikachuFamily 
-      ? 'bg-[#FBC02D]' 
-      : isCharizardFamily 
-        ? 'bg-[#F4511E]' 
-        : isBulbasaurFamily 
-          ? 'bg-[#66BB6A]' 
-          : 'bg-[#4FC3F7]';
+    : isCatFamily
+      ? 'bg-[#FFA726]'
+      : isRobotFamily
+        ? 'bg-gradient-to-r from-purple-600 to-indigo-600'
+        : isPikachuFamily 
+          ? 'bg-[#FBC02D]' 
+          : isCharizardFamily 
+            ? 'bg-[#F4511E]' 
+            : isBulbasaurFamily 
+              ? 'bg-[#66BB6A]' 
+              : 'bg-[#4FC3F7]';
 
   return (
     <AnimatePresence>
@@ -158,7 +279,11 @@ export const EvolutionPreview: React.FC<EvolutionPreviewProps> = ({ isOpen, onCl
                   const isUnlocked = currentLevel >= stage.level;
                   const isCurrent = isSlimeFamily
                     ? index === getSlimeStageIndex(currentLevel)
-                    : currentSpecies === stage.species;
+                    : isCatFamily
+                      ? index === getCatStageIndex(currentLevel)
+                      : isRobotFamily
+                        ? index === getRobotStageIndex(currentLevel)
+                        : currentSpecies === stage.species;
                   const isFinal = index >= 7;
                   
                   return (
@@ -184,8 +309,19 @@ export const EvolutionPreview: React.FC<EvolutionPreviewProps> = ({ isOpen, onCl
                         </div>
                       )}
                       
-                      <div className={`w-16 h-16 mx-auto ${stage.color} ${stage.border} border-4 rounded-2xl flex items-center justify-center text-3xl mb-2 shadow-inner`}>
-                        {stage.icon}
+                       <div className={`w-16 h-16 mx-auto ${stage.color} ${stage.border} border-4 rounded-2xl flex items-center justify-center overflow-hidden mb-2 shadow-inner bg-white/10`}>
+                        {('image' in stage && stage.image) ? (
+                          <img src={stage.image as string} className="w-full h-full object-contain p-1" alt={stage.name} />
+                        ) : previewPokemonIds[stage.species] ? (
+                          <img 
+                            src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${previewPokemonIds[stage.species]}.png`} 
+                            className="w-full h-full object-contain p-1" 
+                            alt={stage.name} 
+                            referrerPolicy="no-referrer"
+                          />
+                        ) : (
+                          <span className="text-3xl">{stage.icon}</span>
+                        )}
                       </div>
                       
                       <div className="text-center">
@@ -222,7 +358,11 @@ export const EvolutionPreview: React.FC<EvolutionPreviewProps> = ({ isOpen, onCl
                 <p className="text-sm font-bold leading-tight flex-1">
                   {isSlimeFamily 
                     ? "通过不断的学习与自律，史莱姆将不断激发自身潜力，吸收大自然元素从而发生九合蜕变，终能成长为吞吐万物的至尊巨型综合体！"
-                    : isPikachuFamily ? "无与伦比的电属性力量！通过不断的学习与自律，积蓄雷鸣能量，终将蜕变为不可战胜的传说级神驱。" : isCharizardFamily ? "由于炽热的斗志，喷火龙家族将不断突破自我！每一步进化都预示着更强的火焰与力量。" : isBulbasaurFamily ? "释放森林的自然潜能！通过不断的学习与自律，妙蛙种子终将蜕变为森罗神武。" : "不断完成学习任务，积累经验值！每提升一级都离更强大的形态更近一步。"}
+                    : isCatFamily
+                      ? "好奇猫通过持之以恒的自律和学习努力，将从温馨活泼的喵喵，历经磨炼，突破野性与维京钢铠，最终汲取烈日与晶曜星光之力，进化为不可一世的终极主宰——黄昏之鬃·奈克洛兹玛！"
+                      : isRobotFamily
+                        ? "电子音律机融合自律专注能极大地激活音符与频率共鸣！通过不断的学习、获取经验，它将褪去机械凡躯，穿过雷低重音之极，最终领悟万佛之音律本源，羽化为开天辟地的‘禅宗琴梵神·终焉造物主’！"
+                        : isPikachuFamily ? "无与伦比的电属性力量！通过不断的学习与自律，积蓄雷鸣能量，终将蜕变为不可战胜的传说级神驱。" : isCharizardFamily ? "由于炽热的斗志，喷火龙家族将不断突破自我！每一步进化都预示着更强的火焰与力量。" : isBulbasaurFamily ? "释放森林的自然潜能！通过不断的学习与自律，妙蛙种子终将蜕变为森罗神武。" : "不断完成学习任务，积累经验值！每提升一级都离更强大的形态更近一步。"}
                 </p>
               </div>
             </div>

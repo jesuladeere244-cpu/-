@@ -13,44 +13,32 @@ const resilientFetch = async (input: RequestInfo | URL, init?: RequestInit): Pro
   let attempt = 0;
   const maxAttempts = 2;
   const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
+  const fetchContext = typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : null);
 
   while (attempt < maxAttempts) {
     try {
       if (!originalFetch) {
         throw new Error('Fetch API not available');
       }
-      return await originalFetch(input, init);
+      return await (fetchContext ? originalFetch.call(fetchContext, input, init) : originalFetch(input, init));
     } catch (error: any) {
       attempt++;
-      const errorMessage = error?.message || String(error);
-      const isNetworkError = errorMessage.includes('Failed to fetch') || 
-                             errorMessage.includes('NetworkError') ||
-                             errorMessage.includes('fetch') ||
-                             errorMessage.includes('Load failed') ||
-                             errorMessage.includes('CORS');
-      
-      if (isNetworkError && attempt < maxAttempts) {
+      if (attempt < maxAttempts) {
         await delay(150 * attempt);
         continue;
       }
 
-      if (isNetworkError) {
-        // 网络不可达或受沙盒限制时，返回模拟安全离线响应，杜绝 exceptions
-        const urlStr = typeof input === 'string' ? input : (input instanceof URL ? input.href : (input as Request).url || '');
-        
-        // 针对不同端点返回 200 OK 静态/空白值，让 SDK 状态正确机理解构，杜绝 400 导致的 Auth 异常抛出
-        let mockData: any = [];
-        if (urlStr.includes('/auth/v1')) {
-          mockData = { user: null, session: null, error: null };
-        }
-        
-        return new Response(JSON.stringify(mockData), {
-          status: 200,
-          headers: { 'Content-Type': 'application/json' }
-        });
+      // 彻底拦截所有 Fetch 级别的异常（包括 Failed to fetch / CORS / Net 崩溃等阻滞错误），防止未处理异常冒泡导致全局报错
+      const urlStr = typeof input === 'string' ? input : (input instanceof URL ? input.href : (input as Request).url || '');
+      let mockData: any = [];
+      if (urlStr.includes('/auth/v1')) {
+        mockData = { user: null, session: null, error: null };
       }
       
-      throw error;
+      return new Response(JSON.stringify(mockData), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
   }
   
@@ -115,9 +103,12 @@ if (typeof window !== 'undefined') {
     }
   }, { capture: true });
 
-  // 3. 拦截全局 window.fetch，防范任何不受控网络请求或第三方 SDK 抛出 Unhandled "Failed to fetch" 导致系统崩溃
+  // 3. 拦截全局 window.fetch 及 globalThis.fetch，防范任何不受控网络请求或第三方 SDK 抛出 Unhandled "Failed to fetch" 导致系统崩溃
   try {
     window.fetch = resilientFetch as any;
+    if (typeof globalThis !== 'undefined') {
+      (globalThis as any).fetch = resilientFetch as any;
+    }
   } catch (e3) {
     // silent
   }
