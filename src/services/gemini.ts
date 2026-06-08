@@ -7,13 +7,21 @@ function getAI() {
     // 优先尝试从环境变量读取，如果没有（比如在 Minimax 部署），则使用这里的硬编码 Key
     const apiKey = ((import.meta as any).env?.VITE_GEMINI_API_KEY) || 
                    (typeof process !== 'undefined' ? process.env?.GEMINI_API_KEY : '') ||
-                   'AlzaSyCnCY40KLMMkXjbw3X-RPMPbUe_i-TFpS4'; // 我从你的截图里看到的 Key
+                   'AlzaSyCnCY40KLMMkXjbw3X-RPMPbUe_i-TFpS4'; // 从截图里读取到的 Key
+    
+    // 支持配置国内反向代理 baseURL 选项，从而在国内免科学上网直连访问
+    const baseURL = ((import.meta as any).env?.VITE_GEMINI_BASE_URL) || 
+                    (typeof process !== 'undefined' ? process.env?.VITE_GEMINI_BASE_URL : '') ||
+                    undefined;
     
     if (!apiKey || apiKey.includes('您的')) {
       console.warn("Gemini API Key is missing.");
       return null;
     }
-    aiInstance = new GoogleGenAI({ apiKey });
+    aiInstance = new GoogleGenAI({ 
+      apiKey,
+      ...(baseURL ? { baseURL } : {})
+    });
   }
   return aiInstance;
 }

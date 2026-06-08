@@ -647,7 +647,7 @@ const getRobotStageConfig = (level: number = 1) => {
   if (level <= 20) {
     return {
       name: '旋律雏机 (初始态)',
-      image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/479.png',
+      image: 'https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/479.png',
       color: 'bg-gradient-to-b from-[#ECEFF1] via-[#D1C4E9] to-[#9575CD]',
       radius: 'rounded-[3rem]',
       border: 'border-[#673AB7] shadow-[0_0_20px_rgba(103,58,183,0.35)]',
@@ -669,7 +669,7 @@ const getRobotStageConfig = (level: number = 1) => {
   else if (level <= 35) {
     return {
       name: '萌动鸣姬 (成长期)',
-      image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/648.png',
+      image: 'https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/648.png',
       color: 'bg-gradient-to-b from-[#E1F5FE] via-[#B2EBF2] to-[#4DD0E1]',
       radius: 'rounded-[3.2rem]',
       border: 'border-[#00ACC1] shadow-[0_0_25px_rgba(0,172,193,0.45)]',
@@ -697,7 +697,7 @@ const getRobotStageConfig = (level: number = 1) => {
   else if (level <= 45) {
     return {
       name: '节奏浪客 (滑行态)',
-      image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/807.png',
+      image: 'https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/807.png',
       color: 'bg-gradient-to-b from-[#004D40] via-[#00796B] to-[#009688]',
       radius: 'rounded-[2.8rem]',
       border: 'border-[#009688] shadow-[0_0_30px_rgba(0,150,136,0.55)]',
@@ -720,7 +720,7 @@ const getRobotStageConfig = (level: number = 1) => {
   else if (level <= 55) {
     return {
       name: '混奏极客 (DJ武装)',
-      image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/849.png',
+      image: 'https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/849.png',
       color: 'bg-gradient-to-b from-[#1A237E] via-[#311B92] to-[#4A148C]',
       radius: 'rounded-[2.4rem]',
       border: 'border-[#BA68C8] shadow-[0_0_35px_rgba(186,104,200,0.65)]',
@@ -746,7 +746,7 @@ const getRobotStageConfig = (level: number = 1) => {
   else if (level <= 65) {
     return {
       name: '震天重炮 (重音尊)',
-      image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/649.png',
+      image: 'https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/649.png',
       color: 'bg-gradient-to-b from-[#212121] via-[#1E3A8A] to-[#3B82F6]',
       radius: 'rounded-[2rem]',
       border: 'border-[#3B82F6] shadow-[0_0_40px_rgba(59,130,246,0.7)]',
@@ -771,7 +771,7 @@ const getRobotStageConfig = (level: number = 1) => {
   else if (level <= 75) {
     return {
       name: '暴风琴羽 (极光流)',
-      image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1008.png',
+      image: 'https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/1008.png',
       color: 'bg-gradient-to-b from-[#006064] via-[#0097A7] to-[#80DEEA]',
       radius: 'rounded-[1.6rem]',
       border: 'border-[#4DD0E1] shadow-[0_0_45px_rgba(77,208,225,0.85)]',
@@ -796,7 +796,7 @@ const getRobotStageConfig = (level: number = 1) => {
   else if (level <= 85) {
     return {
       name: '天籁绝音 (神圣姬)',
-      image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/801.png',
+      image: 'https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/801.png',
       color: 'bg-gradient-to-b from-[#FCE4EC] via-[#F8BBD0] to-[#E91E63]',
       radius: 'rounded-[3.8rem]',
       border: 'border-[#E91E63] shadow-[0_0_50px_rgba(233,30,99,0.75)]',
@@ -830,7 +830,7 @@ const getRobotStageConfig = (level: number = 1) => {
   else if (level <= 95) {
     return {
       name: '寰宇天乐尊 (神皇)',
-      image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/493.png',
+      image: 'https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/493.png',
       color: 'bg-gradient-to-b from-[#0D47A1] via-[#1A237E] to-[#4A148C]',
       radius: 'rounded-[50%/35%_35%_48%_48%]',
       border: 'border-[#FFD54F] shadow-[0_0_55px_rgba(255,213,79,0.95),_0_0_20px_rgba(255,213,79,0.4)]',
@@ -851,7 +851,7 @@ const getRobotStageConfig = (level: number = 1) => {
   else {
     return {
       name: '禅宗琴梵神 (终焉造物主)',
-      image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10156.png',
+      image: 'https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/10156.png',
       color: 'bg-gradient-to-b from-[#212121] via-[#EDC435] to-[#FFE082]',
       radius: 'rounded-[12rem_12rem_6rem_6rem/8rem_8rem_5rem_5rem]',
       border: 'border-[#FFB300] shadow-[0_0_65px_rgba(255,179,0,1)] ring-4 ring-[#FFD54F]/20',
@@ -1391,7 +1391,7 @@ export const PetDisplay: React.FC<PetDisplayProps> = ({
             {catStageConfig?.element}
             {robotStageConfig?.element}
             <img 
-              src={species === 'robot' ? robotStageConfig?.image : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokeId}.png`}
+              src={species === 'robot' ? robotStageConfig?.image : `https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/${pokeId}.png`}
               alt={species}
               className={cn(
                 "w-full h-full object-contain drop-shadow-xl z-10",
