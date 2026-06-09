@@ -1800,13 +1800,19 @@ export default function App() {
                   </button>
                 </div>
               ) : (
-                <button
-                  onClick={() => setShowAuth(true)}
-                  className="px-6 py-3 bg-[#FF7043] text-white rounded-2xl font-black border-2 border-[#5D4037] shadow-[4px_4px_0px_#5D4037] hover:bg-[#FF8A65] transition-all active:translate-y-[2px] active:shadow-none flex items-center gap-2"
-                >
-                  <LogIn className="w-5 h-5" />
-                  登录
-                </button>
+                <div className="flex items-center gap-3">
+                  <div className="hidden md:flex items-center gap-1.5 px-3 py-2 bg-[#E8F5E9] text-[#2E7D32] rounded-xl border border-[#C8E6C9] text-xs font-black shadow-inner">
+                    <div className="w-2 h-2 bg-[#4CAF50] rounded-full animate-pulse" />
+                    本地沙箱模式（自动保存）
+                  </div>
+                  <button
+                    onClick={() => setShowAuth(true)}
+                    className="px-6 py-3 bg-[#FF7043] text-white rounded-2xl font-black border-2 border-[#5D4037] shadow-[4px_4px_0px_#5D4037] hover:bg-[#FF8A65] transition-all active:translate-y-[2px] active:shadow-none flex items-center gap-2"
+                  >
+                    <LogIn className="w-5 h-5" />
+                    云同步 / 登录
+                  </button>
+                </div>
               )}
             </div>
             <div className="flex bg-[#EFEBE9] p-2 rounded-[2.5rem] border-4 border-[#D7CCC8] overflow-x-auto no-scrollbar max-w-[60vw]">

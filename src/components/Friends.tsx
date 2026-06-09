@@ -21,8 +21,12 @@ export const Friends: React.FC<FriendsProps> = ({ userId }) => {
   const [interactionLog, setInteractionLog] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchFriends();
-    setInviteCode(userId.slice(0, 8).toUpperCase());
+    if (userId) {
+      fetchFriends();
+      setInviteCode(userId.slice(0, 8).toUpperCase());
+    } else {
+      setInviteCode('OFFLINE');
+    }
   }, [userId]);
 
   const getSpeciesEmoji = (species: string, level: number = 1): string => {
@@ -75,7 +79,7 @@ export const Friends: React.FC<FriendsProps> = ({ userId }) => {
   };
 
   const fetchFriends = async () => {
-    if (!supabase) return;
+    if (!supabase || !userId) return;
     setLoading(true);
     try {
       // 1. 获取好友 ID
@@ -164,7 +168,7 @@ export const Friends: React.FC<FriendsProps> = ({ userId }) => {
       if (findError || !allProfiles) throw new Error('查询数据库用户失败');
 
       const targetUser = allProfiles.find(p => 
-        p.id.slice(0, 8).toUpperCase() === friendCode.trim().toUpperCase()
+        p.id && typeof p.id === 'string' && p.id.slice(0, 8).toUpperCase() === friendCode.trim().toUpperCase()
       );
 
       if (!targetUser) throw new Error('找不到该邀请码对应的用户');
