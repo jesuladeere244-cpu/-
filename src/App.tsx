@@ -257,14 +257,20 @@ export default function App() {
           // silent sync fail fallback
         }
 
+        // 3. 稳妥拉取云端存档，防止空数据（例如 {} 默认值）覆盖本地已有数据导致页面崩溃白屏
         const { data, error } = await supabase
           .from('pet_states')
           .select('content')
           .eq('user_id', user.id)
           .single();
 
-        if (data && !error) {
-          setState(data.content);
+        if (data && !error && data.content && typeof data.content === 'object') {
+          const dbContent = data.content as any;
+          if (dbContent.profiles && typeof dbContent.profiles === 'object' && Object.keys(dbContent.profiles).length > 0) {
+            setState(dbContent);
+          } else {
+            console.log('[Sync] 云端数据未初始化或 profiles 为空，保留当前本地/初始状态');
+          }
         }
       } catch (err) {
         // silent sync fail fallback
@@ -419,7 +425,7 @@ export default function App() {
     localStorage.setItem('smarty_pet_state_v2', JSON.stringify(state));
   }, [state]);
 
-  const activeProfile = state.activeProfileId ? state.profiles[state.activeProfileId] : null;
+  const activeProfile = (state && state.activeProfileId && state.profiles) ? state.profiles[state.activeProfileId] : null;
 
   // Daily streak and greeting logic
   useEffect(() => {
@@ -1678,13 +1684,13 @@ export default function App() {
     );
   }
 
-  if (!state.activeProfileId) {
-    const profileList = Object.entries(state.profiles).map(([id, p]: [string, any]) => ({
+  if (!state || !state.activeProfileId) {
+    const profileList = Object.entries(state?.profiles || {}).map(([id, p]: [string, any]) => ({
       id,
-      name: id === Object.keys(state.profiles)[0] ? "大宝贝" : "小宝贝",
-      petName: p.pet.name,
-      petSpecies: p.pet.species,
-      level: p.pet.level
+      name: id === Object.keys(state?.profiles || {})[0] ? "大宝贝" : "小宝贝",
+      petName: p.pet?.name || '未命名',
+      petSpecies: p.pet?.species || 'slime',
+      level: p.pet?.level || 1
     }));
 
     return (
@@ -1704,19 +1710,19 @@ export default function App() {
     ...realFriends.map(friend => ({
       id: friend.id,
       name: friend.username,
-      petName: friend.pet.name,
-      level: friend.pet.level,
-      xp: friend.pet.xp,
-      points: friend.pet.points,
+      petName: friend.pet?.name || '小可爱',
+      level: friend.pet?.level || 1,
+      xp: friend.pet?.xp || 0,
+      points: friend.pet?.points || 0,
       isCurrentUser: false
     })),
-    ...Object.entries(state.profiles).map(([id, p]: [string, any]) => ({
+    ...Object.entries(state?.profiles || {}).map(([id, p]: [string, any]) => ({
       id,
-      name: id === Object.keys(state.profiles)[0] ? "大宝贝" : "小宝贝",
-      petName: p.pet.name,
-      level: p.pet.level,
-      xp: p.pet.xp,
-      points: p.pet.points,
+      name: id === Object.keys(state?.profiles || {})[0] ? "大宝贝" : "小宝贝",
+      petName: p.pet?.name || '小可爱',
+      level: p.pet?.level || 1,
+      xp: p.pet?.xp || 0,
+      points: p.pet?.points || 0,
       isCurrentUser: id === state.activeProfileId
     }))
   ];
