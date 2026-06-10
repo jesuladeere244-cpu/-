@@ -223,7 +223,10 @@ export default function App() {
       const saved = localStorage.getItem('smarty_pet_state_v2');
       if (!saved) return INITIAL_STATE;
       const parsed = JSON.parse(saved) as AppState;
-      return parsed;
+      if (parsed && typeof parsed === 'object' && parsed.profiles) {
+        return parsed;
+      }
+      return INITIAL_STATE;
     } catch {
       return INITIAL_STATE;
     }
@@ -695,7 +698,7 @@ export default function App() {
         }
       };
     });
-  }, [activeProfile?.pet.level, activeProfile?.pet.xp, activeProfile?.tasks.filter(t => t.completed).length]);
+  }, [activeProfile?.pet?.level, activeProfile?.pet?.xp, activeProfile?.tasks ? activeProfile.tasks.filter(t => t.completed).length : 0]);
 
   const handleSelectProfile = (id: string) => {
     audioService.play('click');

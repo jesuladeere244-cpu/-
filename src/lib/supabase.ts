@@ -64,7 +64,26 @@ if (supabaseAnonKey && supabaseAnonKey.startsWith('sb_publishable_') && !envUrl)
   }
 }
 
-const supabaseUrl = envUrl || defaultUrl;
+const supabaseUrl = (() => {
+  let url = envUrl || defaultUrl;
+  
+  // 智能纠错：如果 API Key 属于 MemFire (以 sb_publishable_ 开头) 且 URL 被配置为 Supabase 官方域名，则自动纠正为对应的 MemFire 域名
+  if (supabaseAnonKey && supabaseAnonKey.startsWith('sb_publishable_')) {
+    if (envUrl && (envUrl.includes('.supabase.co') || !envUrl.includes('.memfire.com'))) {
+      try {
+        const parts = supabaseAnonKey.split('_');
+        if (parts.length >= 3 && parts[2]) {
+          const correctedUrl = `https://${parts[2]}.nosql.memfire.com`;
+          console.warn(`[Auth Self-Healing] ⚠️ 发现严重配置冲突！MemFire 密钥不可与 Supabase 域名混用。已将 API 地址强制转换为对应的国内 MemFire 端点: ${correctedUrl}`);
+          url = correctedUrl;
+        }
+      } catch (e) {
+        console.error('[Auth Self-Healing] 自动纠错解析域名失败:', e);
+      }
+    }
+  }
+  return url;
+})();
 
 // 用于 UI 显示调试诊断信息
 export const getSupabaseDiagnostics = () => {
