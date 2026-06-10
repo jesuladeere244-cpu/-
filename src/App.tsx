@@ -584,11 +584,11 @@ export default function App() {
     } else {
       lastSlimeStageRef.current = null;
     }
-  }, [activeProfile?.pet.level, activeProfile?.pet.species]);
+  }, [activeProfile?.pet?.level, activeProfile?.pet?.species]);
 
   // 新增：宠物自动进化校准逻辑
   useEffect(() => {
-    if (!activeProfile || !activeProfile.pet.isInitialized) return;
+    if (!activeProfile || !activeProfile.pet || !activeProfile.pet.isInitialized) return;
     
     let correctSpecies: PetSpecies | null = null;
     let familyName = "";
@@ -647,11 +647,11 @@ export default function App() {
         }, 100);
       }
     }
-  }, [activeProfile?.pet.level, activeProfile?.pet.species]);
+  }, [activeProfile?.pet?.level, activeProfile?.pet?.species]);
 
   // Update goals based on pet level and xp
   useEffect(() => {
-    if (!activeProfile || !activeProfile.pet.isInitialized) return;
+    if (!activeProfile || !activeProfile.pet || !activeProfile.pet.isInitialized) return;
 
     setState(prev => {
       const p = prev.profiles[prev.activeProfileId!];
@@ -1719,7 +1719,7 @@ export default function App() {
       points: friend.pet?.points || 0,
       isCurrentUser: false
     })),
-    ...Object.entries(state?.profiles || {}).map(([id, p]: [string, any]) => ({
+    ...Object.entries(state?.profiles || {}).filter(([_, p]) => !!p).map(([id, p]: [string, any]) => ({
       id,
       name: id === Object.keys(state?.profiles || {})[0] ? "大宝贝" : "小宝贝",
       petName: p.pet?.name || '小可爱',
@@ -1870,7 +1870,7 @@ export default function App() {
                 className={cn(
                   "flex items-center gap-2 px-6 py-3 rounded-[2rem] text-lg font-black transition-all whitespace-nowrap",
                   activeTab === 'garden' ? "bg-[#81C784] text-white shadow-md border-2 border-[#5D4037]" : "text-[#A1887F] hover:text-[#5D4037]",
-                  activeProfile?.pet.level! < 30 && "opacity-50"
+                  (activeProfile?.pet?.level || 0) < 30 && "opacity-50"
                 )}
               >
                 <Trees className="w-5 h-5" />

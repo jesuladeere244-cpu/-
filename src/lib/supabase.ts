@@ -197,15 +197,8 @@ if (typeof window !== 'undefined') {
     }
   }, { capture: true });
 
-  // 3. 拦截全局 window.fetch 及 globalThis.fetch，防止不可控的 Failed to fetch
-  try {
-    window.fetch = resilientFetch as any;
-    if (typeof globalThis !== 'undefined') {
-      (globalThis as any).fetch = resilientFetch as any;
-    }
-  } catch (e3) {
-    // silent
-  }
+  // 3. 拦截全局 window.fetch 及 globalThis.fetch已被移除，以避免在 Vercel 生产部署上对通用网络资源请求造成非预期副作用。
+  // 我们已经在 Supabase 实例的 createClient 参数传入了 resilientFetch 自定义加载器，其底层通讯依然完美享有高弹性重试与自愈能力。
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
