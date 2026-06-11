@@ -47,6 +47,7 @@ export const PointsLedger: React.FC<PointsLedgerProps> = ({
   onUpdateGoal
 }) => {
   const [isParentMode, setIsParentMode] = useState(false);
+  const [historyTab, setHistoryTab] = useState<'all' | 'gain' | 'loss'>('all');
   const [adjustType, setAdjustType] = useState<'gain' | 'loss'>('gain');
   const [amount, setAmount] = useState<number>(10);
   const [reason, setReason] = useState<string>('');
@@ -621,65 +622,129 @@ export const PointsLedger: React.FC<PointsLedgerProps> = ({
           )}
         </AnimatePresence>
 
+        {/* Tab Buttons */}
+        <div className="flex flex-col sm:flex-row gap-2 p-1.5 bg-[#F5F5F5] rounded-3xl mb-4 border border-[#E0E0E0]">
+          <button
+            onClick={() => setHistoryTab('all')}
+            className={cn(
+              "flex-1 py-2 text-xs font-black rounded-2xl transition-all flex items-center justify-center gap-1.5",
+              historyTab === 'all'
+                ? "bg-white text-[#5D4037] shadow-sm border border-[#D7CCC8]"
+                : "text-[#8D6E63] hover:text-[#5D4037]"
+            )}
+          >
+            <span>📜 全部记录</span>
+            <span className="text-[10px] px-2 py-0.5 bg-[#E0E0E0] rounded-full text-slate-700">
+              {pointsHistory.length}
+            </span>
+          </button>
+          
+          <button
+            onClick={() => setHistoryTab('gain')}
+            className={cn(
+              "flex-1 py-2 text-xs font-black rounded-2xl transition-all flex items-center justify-center gap-1.5",
+              historyTab === 'gain'
+                ? "bg-[#E8F5E9] text-[#2E7D32] shadow-sm border border-[#C8E6C9]"
+                : "text-[#388E3C] hover:text-[#2E7D32]"
+            )}
+          >
+            <span>🎁 奖励加分项</span>
+            <span className="text-[10px] px-2 py-0.5 bg-[#C8E6C9] rounded-full text-[#1B5E20]">
+              {pointsHistory.filter(log => log.type === 'gain').length}
+            </span>
+          </button>
+
+          <button
+            onClick={() => setHistoryTab('loss')}
+            className={cn(
+              "flex-1 py-2 text-xs font-black rounded-2xl transition-all flex items-center justify-center gap-1.5",
+              historyTab === 'loss'
+                ? "bg-[#FFEBEE] text-[#C62828] shadow-sm border border-[#FFCDD2]"
+                : "text-[#D32F2F] hover:text-[#C62828]"
+            )}
+          >
+            <span>⚠️ 扣分惩罚项</span>
+            <span className="text-[10px] px-2 py-0.5 bg-[#FFCDD2] rounded-full text-[#B71C1C]">
+              {pointsHistory.filter(log => log.type === 'loss').length}
+            </span>
+          </button>
+        </div>
+
         {/* Ledger logs list */}
         <div className="space-y-2.5 max-h-[300px] overflow-y-auto pr-1">
-          {pointsHistory.length === 0 ? (
-            <div className="text-center py-6">
-              <p className="text-xs text-[#A1887F] font-bold">最近 30 天内暂无积分增减记录</p>
-              <p className="text-[10px] text-gray-400 mt-1">完成今日任务或让父母赏励来获得成长币吧！</p>
+          {pointsHistory.filter(log => {
+            if (historyTab === 'gain') return log.type === 'gain';
+            if (historyTab === 'loss') return log.type === 'loss';
+            return true;
+          }).length === 0 ? (
+            <div className="text-center py-8 bg-gray-50/50 rounded-2xl border-2 border-dashed border-gray-100">
+              <p className="text-xs text-[#A1887F] font-bold">
+                {historyTab === 'all' && "最近 30 天内暂无积分增减记录"}
+                {historyTab === 'gain' && "暂无获赠奖励加分项，继续加油哦"}
+                {historyTab === 'loss' && "太棒了！暂无任何被扣分处罚项"}
+              </p>
+              <p className="text-[10px] text-gray-400 mt-1">
+                {historyTab === 'loss' ? "保持优秀的习惯，不要被扣除学习币哦！" : "完成今日成长日常任务或跟妈妈约定来赚取奖赏吧！"}
+              </p>
             </div>
           ) : (
-            pointsHistory.map((log) => {
-              const isGain = log.type === 'gain';
-              return (
-                <div 
-                  key={log.id} 
-                  className={cn(
-                    "flex items-start justify-between p-3 rounded-2xl border-2 transition-all",
-                    isGain 
-                      ? "bg-emerald-50/40 border-emerald-100 hover:bg-emerald-50/80" 
-                      : "bg-rose-50/40 border-rose-100 hover:bg-rose-50/80"
-                  )}
-                >
-                  <div className="flex gap-2.5">
-                    <div 
-                      className={cn(
-                        "p-1.5 rounded-xl border-2 shrink-0 mt-0.5",
-                        isGain 
-                          ? "bg-emerald-500 text-white border-emerald-600" 
-                          : "bg-rose-500 text-white border-rose-600"
-                      )}
-                    >
-                      {isGain ? (
-                        <ArrowUpRight className="w-3.5 h-3.5" />
-                      ) : (
-                        <ArrowDownRight className="w-3.5 h-3.5" />
-                      )}
+            pointsHistory
+              .filter(log => {
+                if (historyTab === 'gain') return log.type === 'gain';
+                if (historyTab === 'loss') return log.type === 'loss';
+                return true;
+              })
+              .map((log) => {
+                const isGain = log.type === 'gain';
+                return (
+                  <div 
+                    key={log.id} 
+                    className={cn(
+                      "flex items-start justify-between p-3 rounded-2xl border-2 transition-all",
+                      isGain 
+                        ? "bg-emerald-50/40 border-emerald-100 hover:bg-emerald-50/80" 
+                        : "bg-rose-50/40 border-rose-100 hover:bg-rose-50/80"
+                    )}
+                  >
+                    <div className="flex gap-2.5">
+                      <div 
+                        className={cn(
+                          "p-1.5 rounded-xl border-2 shrink-0 mt-0.5",
+                          isGain 
+                            ? "bg-emerald-500 text-white border-emerald-600" 
+                            : "bg-rose-500 text-white border-rose-600"
+                        )}
+                      >
+                        {isGain ? (
+                          <ArrowUpRight className="w-3.5 h-3.5" />
+                        ) : (
+                          <ArrowDownRight className="w-3.5 h-3.5" />
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold text-[#4E342E] leading-normal line-clamp-2">
+                          {log.reason}
+                        </p>
+                        <span className="text-[10px] text-[#A1887F] font-medium flex items-center gap-1 mt-0.5">
+                          <Calendar className="w-3 h-3" />
+                          {formatTime(log.timestamp)}
+                        </span>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-xs font-bold text-[#4E342E] leading-normal line-clamp-2">
-                        {log.reason}
-                      </p>
-                      <span className="text-[10px] text-[#A1887F] font-medium flex items-center gap-1 mt-0.5">
-                        <Calendar className="w-3 h-3" />
-                        {formatTime(log.timestamp)}
+
+                    <div className="shrink-0 text-right pl-3">
+                      <span 
+                        className={cn(
+                          "text-sm font-black flex items-center gap-0.5 font-mono",
+                          isGain ? "text-emerald-600" : "text-rose-600"
+                        )}
+                      >
+                        {isGain ? '+' : '-'}{log.amount}
                       </span>
                     </div>
                   </div>
-
-                  <div className="shrink-0 text-right pl-3">
-                    <span 
-                      className={cn(
-                        "text-sm font-black flex items-center gap-0.5 font-mono",
-                        isGain ? "text-emerald-600" : "text-rose-600"
-                      )}
-                    >
-                      {isGain ? '+' : '-'}{log.amount}
-                    </span>
-                  </div>
-                </div>
-              );
-            })
+                );
+              })
           )}
         </div>
       </div>

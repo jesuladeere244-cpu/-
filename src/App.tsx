@@ -455,7 +455,13 @@ export default function App() {
     localStorage.setItem('smarty_pet_state_v2', JSON.stringify(state));
   }, [state]);
 
-  const activeProfile = (state && state.activeProfileId && state.profiles) ? state.profiles[state.activeProfileId] : null;
+  const activeProfileRaw = (state && state.activeProfileId && state.profiles) ? state.profiles[state.activeProfileId] : null;
+  const activeProfile = activeProfileRaw ? {
+    ...activeProfileRaw,
+    goals: activeProfileRaw.goals || [],
+    pointsHistory: activeProfileRaw.pointsHistory || [],
+    tasks: activeProfileRaw.tasks || [],
+  } : null;
 
   // Daily streak and greeting logic
   useEffect(() => {
@@ -2128,6 +2134,7 @@ export default function App() {
         ) : activeTab === 'goals' && activeProfile ? (
           <LearningGoals 
             goals={activeProfile.goals} 
+            pointsHistory={activeProfile.pointsHistory}
             onAddGoal={handleAddGoal}
             onDeleteGoal={handleDeleteGoal}
             onDeductPoints={handleDeductPoints}

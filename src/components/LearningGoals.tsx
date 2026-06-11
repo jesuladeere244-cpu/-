@@ -14,13 +14,18 @@ import {
   Minus,
   Edit2,
   Check,
-  X
+  X,
+  History,
+  ArrowUpRight,
+  ArrowDownRight,
+  Calendar
 } from 'lucide-react';
-import { LearningGoal } from '../types';
+import { LearningGoal, PointsLog } from '../types';
 import { cn } from '../lib/utils';
 
 interface LearningGoalsProps {
-  goals: LearningGoal[];
+  goals?: LearningGoal[];
+  pointsHistory?: PointsLog[];
   onAddGoal: (goal: Omit<LearningGoal, 'id' | 'current' | 'isCompleted'>) => void;
   onDeleteGoal: (goalId: string) => void;
   onDeductPoints: (amount: number, reason: string) => void;
@@ -28,16 +33,18 @@ interface LearningGoalsProps {
 }
 
 export const LearningGoals: React.FC<LearningGoalsProps> = ({ 
-  goals, 
-  onAddGoal, 
-  onDeleteGoal, 
+  goals = [], 
+  pointsHistory = [],
+  onAddGoal,
+  onDeleteGoal,
   onDeductPoints,
   onUpdateGoal
 }) => {
   const [isParentMode, setIsParentMode] = useState(false);
-  const [showAddForm, setShowAddForm] = useState(false);
+  const [showAddForm, setShowAddForm] = useState(true); // Default to true so it is not blank!
   const [showPenaltyForm, setShowPenaltyForm] = useState(false);
   const [showRewardForm, setShowRewardForm] = useState(false);
+  const [activeLedgerTab, setActiveLedgerTab] = useState<'all' | 'gain' | 'loss'>('all');
   const [newGoal, setNewGoal] = useState<Omit<LearningGoal, 'id' | 'current' | 'isCompleted'>>({
     title: '',
     type: 'tasks',
@@ -548,6 +555,135 @@ export const LearningGoals: React.FC<LearningGoalsProps> = ({
             </motion.div>
           );
         })}
+      </div>
+
+      {goals.length === 0 && (
+        <div className="text-center py-12 px-6 bg-white rounded-[2.5rem] border-4 border-dashed border-[#D7CCC8] mb-6">
+          <p className="text-xl font-black text-[#8D6E63] font-hand">🐾 暂未设立任何成长日常契约目标</p>
+          <p className="text-xs text-[#A1887F] font-bold mt-2">
+            点击右上角【目标与奖惩管理】或在下方进入管理模式，即可随时定制并追踪你专属的里程碑契约！
+          </p>
+        </div>
+      )}
+
+      {/* 奖励与扣分历史大账本 */}
+      <div className="bg-white rounded-[2.5rem] border-4 border-[#FFA726] p-6 sm:p-8 mt-12 shadow-sm relative overflow-hidden">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b-2 border-orange-50 relative z-10">
+          <div className="flex items-center gap-3">
+            <div className="bg-[#4FC3F7] p-2.5 rounded-2xl border-2 border-[#5D4037] shadow-[2px_2px_0px_#0288D1]">
+              <History className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h3 className="text-2xl font-black text-[#5D4037] font-hand">🐾 奖惩明细大账本</h3>
+              <p className="text-[#8D6E63] text-xs font-bold">让孩子随时清晰校对自己的加分奖励和扣分处罚项！</p>
+            </div>
+          </div>
+          <div className="text-xs text-slate-400 font-extrabold font-mono bg-slate-50 px-3 py-1.5 rounded-xl border self-start sm:self-auto shrink-0">
+            全部记录: {pointsHistory.length} 条
+          </div>
+        </div>
+
+        {/* Two Col layout for separating Gains and Losses completely! */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
+          
+          {/* Gains (奖励加分项 List) */}
+          <div className="bg-[#E8F5E9]/60 rounded-[2rem] border-4 border-[#C5E1A5] p-5 shadow-xs transition-all hover:bg-[#E8F5E9]/80">
+            <div className="flex items-center justify-between mb-4 pb-2 border-b-2 border-[#C5E1A5]">
+              <span className="text-base font-black text-[#2E7D32] flex items-center gap-1.5 font-hand">
+                <Star className="w-5 h-5 text-[#388E3C]" />
+                奖励加分项 ({pointsHistory.filter(log => log.type === 'gain').length} 条)
+              </span>
+              <span className="text-[10px] bg-[#C5E1A5] text-[#1B5E20] px-2 py-0.5 rounded-full font-black">
+                继续保持 🌟
+              </span>
+            </div>
+
+            <div className="space-y-2.5 max-h-[350px] overflow-y-auto pr-1">
+              {pointsHistory.filter(log => log.type === 'gain').length === 0 ? (
+                <div className="text-center py-12 bg-white/70 rounded-xl border border-dashed border-[#C5E1A5]">
+                  <p className="text-xs font-bold text-slate-400">暂无获赠奖励加分项</p>
+                  <p className="text-[10px] text-slate-400/80 mt-1">主动做好习惯、完成今日任务赚取币奖赏！</p>
+                </div>
+              ) : (
+                pointsHistory
+                  .filter(log => log.type === 'gain')
+                  .map((log) => (
+                    <div 
+                      key={log.id} 
+                      className="flex items-center justify-between p-3 rounded-xl border border-emerald-100 bg-white shadow-xs"
+                    >
+                      <div className="flex gap-2">
+                        <div className="p-1.5 bg-[#E8F5E9] text-[#2E7D32] rounded-lg mt-0.5 shrink-0">
+                          <ArrowUpRight className="w-3.5 h-3.5" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-black text-[#5D4037] leading-normal line-clamp-2">{log.reason}</p>
+                          <span className="text-[9px] text-[#A1887F] font-bold block mt-0.5">
+                            {new Date(log.timestamp).toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
+                      <span className="text-xs font-black text-[#2E7D32] font-mono shrink-0 pl-2">
+                        +{log.amount} 币
+                      </span>
+                    </div>
+                  ))
+              )}
+            </div>
+          </div>
+
+          {/* Losses (扣分惩罚项 List) */}
+          <div className="bg-[#FFEBEE]/60 rounded-[2rem] border-4 border-[#FFCDD2] p-5 shadow-xs transition-all hover:bg-[#FFEBEE]/80">
+            <div className="flex items-center justify-between mb-4 pb-2 border-b-2 border-[#FFCDD2]">
+              <span className="text-base font-black text-[#C62828] flex items-center gap-1.5 font-hand">
+                <AlertTriangle className="w-5 h-5 text-[#E53935]" />
+                扣分惩罚项 ({pointsHistory.filter(log => log.type === 'loss').length} 条)
+              </span>
+              <span className="text-[10px] bg-[#FFCDD2] text-[#B71C1C] px-2 py-0.5 rounded-full font-black animate-pulse">
+                自律反思 ⚠️
+              </span>
+            </div>
+
+            <div className="space-y-2.5 max-h-[350px] overflow-y-auto pr-1">
+              {pointsHistory.filter(log => log.type === 'loss').length === 0 ? (
+                <div className="text-center py-12 bg-white/70 rounded-xl border border-dashed border-[#FFCDD2]">
+                  <p className="text-xs font-bold text-emerald-600">🎉 太棒了！最近没有被扣分</p>
+                  <p className="text-[10px] text-slate-400 mt-1">孩子做得很棒，请继续保持优秀作息哦！</p>
+                </div>
+              ) : (
+                pointsHistory
+                  .filter(log => log.type === 'loss')
+                  .map((log) => (
+                    <div 
+                      key={log.id} 
+                      className="flex items-center justify-between p-3 rounded-xl border-2 border-rose-100 bg-[#FFF9F9] shadow-xs"
+                    >
+                      <div className="flex gap-2">
+                        <div className="p-1.5 bg-rose-100 text-[#E53935] rounded-lg mt-0.5 shrink-0">
+                          <ArrowDownRight className="w-3.5 h-3.5" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-black text-[#5D4037] leading-normal line-clamp-2">{log.reason}</p>
+                          <span className="text-[9px] text-[#A1887F] font-bold block mt-0.5">
+                            {new Date(log.timestamp).toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
+                      <span className="text-xs font-black text-[#E53935] font-mono shrink-0 pl-2">
+                        -{log.amount} 币
+                      </span>
+                    </div>
+                  ))
+              )}
+            </div>
+          </div>
+
+        </div>
+
+        {/* Decorative Background Icon */}
+        <div className="absolute -bottom-8 -right-8 opacity-[0.03] scale-150 rotate-12 pointer-events-none">
+          <History className="w-48 h-48" />
+        </div>
       </div>
     </div>
   );
