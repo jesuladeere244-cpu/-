@@ -989,6 +989,23 @@ export default function App() {
     }));
   };
 
+  const handleUpdateGoal = (updatedGoal: LearningGoal) => {
+    if (!state.activeProfileId) return;
+    setState(prev => {
+      const p = prev.profiles[prev.activeProfileId!];
+      return {
+        ...prev,
+        profiles: {
+          ...prev.profiles,
+          [prev.activeProfileId!]: {
+            ...p,
+            goals: p.goals.map(g => g.id === updatedGoal.id ? updatedGoal : g)
+          }
+        }
+      };
+    });
+  };
+
   const handleDeductPoints = (amount: number, reason: string) => {
     if (!state.activeProfileId || !activeProfile) return;
     
@@ -2065,6 +2082,9 @@ export default function App() {
                 onDeductPoints={handleDeductPoints}
                 points={activeProfile.pet.points}
                 petName={activeProfile.pet.name}
+                onAddGoal={handleAddGoal}
+                onDeleteGoal={handleDeleteGoal}
+                onUpdateGoal={handleUpdateGoal}
               />
               
               <div className="mt-12 p-6 bg-[#E8F5E9] rounded-[2rem] border-4 border-[#C8E6C9] relative overflow-hidden">
@@ -2111,6 +2131,7 @@ export default function App() {
             onAddGoal={handleAddGoal}
             onDeleteGoal={handleDeleteGoal}
             onDeductPoints={handleDeductPoints}
+            onUpdateGoal={handleUpdateGoal}
           />
         ) : (
           <main className="flex flex-col items-center">
