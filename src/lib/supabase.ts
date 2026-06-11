@@ -95,7 +95,7 @@ export const getSupabaseDiagnostics = () => {
   };
 };
 
-// 递进重试型 resilientFetch，解决沙箱/iframe里偶尔出现的 Web Lock 状态抢占
+// 递进重试型 resilientFetch，解决沙箱/iframe里偶尔出现的 Web Lock 状态抢占，配合 Memfire 域名自动纠错
 const resilientFetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
   let attempt = 0;
   const maxAttempts = 2;
@@ -114,6 +114,40 @@ const resilientFetch = async (input: RequestInfo | URL, init?: RequestInit): Pro
     } catch (error: any) {
       attempt++;
       console.warn(`[Supabase Fetch] 第 ${attempt} 次重试请求失败: ${urlStr}`, error);
+
+      // --- 自动容错自愈：如果是在 MemFire 网络上可能由于域名从 .nosql.memfire.com 迁移到了 .supabase.memfire.com 或反之 ---
+      let fallbackInput = input;
+      let hasFallback = false;
+      if (typeof input === 'string') {
+        if (input.includes('.nosql.memfire.com')) {
+          fallbackInput = input.replace('.nosql.memfire.com', '.supabase.memfire.com');
+          hasFallback = true;
+        } else if (input.includes('.supabase.memfire.com')) {
+          fallbackInput = input.replace('.supabase.memfire.com', '.nosql.memfire.com');
+          hasFallback = true;
+        }
+      } else if (input instanceof URL) {
+        let href = input.href;
+        if (href.includes('.nosql.memfire.com')) {
+          fallbackInput = new URL(href.replace('.nosql.memfire.com', '.supabase.memfire.com'));
+          hasFallback = true;
+        } else if (href.includes('.supabase.memfire.com')) {
+          fallbackInput = new URL(href.replace('.supabase.memfire.com', '.nosql.memfire.com'));
+          hasFallback = true;
+        }
+      }
+
+      if (hasFallback && fallbackInput !== input) {
+        const fallbackUrlStr = typeof fallbackInput === 'string' ? fallbackInput : (fallbackInput instanceof URL ? fallbackInput.href : '');
+        console.log(`[Supabase Fetch Self-Healing] 自动尝试切换 备用 MemFire 域名端点并重试: ${fallbackUrlStr}`);
+        try {
+          const context = typeof window !== 'undefined' ? window : globalThis;
+          return await (nativeFetch as any).call(context, fallbackInput, init);
+        } catch (fallbackError) {
+          console.error(`[Supabase Fetch Self-Healing] 备用域名端点请求亦失败: ${fallbackUrlStr}`, fallbackError);
+        }
+      }
+
       if (attempt < maxAttempts) {
         await delay(150 * attempt);
         continue;

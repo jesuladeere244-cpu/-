@@ -56,6 +56,14 @@ export interface LearningGoal {
   isCompleted: boolean;
 }
 
+export interface PointsLog {
+  id: string;
+  type: 'gain' | 'loss';
+  amount: number;
+  reason: string;
+  timestamp: number;
+}
+
 export interface PetState {
   name: string;
   species: PetSpecies;
@@ -83,6 +91,7 @@ export interface AppState {
       pet: PetState;
       shopItems: ShopItem[];
       goals: LearningGoal[];
+      pointsHistory?: PointsLog[];
     };
   };
   activeProfileId: string | null;

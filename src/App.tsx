@@ -14,11 +14,29 @@ import { Garden } from './components/Garden';
 import { ProfileSelector } from './components/ProfileSelector';
 import { Auth } from './components/Auth';
 import { Friends } from './components/Friends';
-import { Task, PetState, AppState, PetSpecies, ShopItem, LearningGoal, Plant } from './types';
+import { PointsLedger } from './components/PointsLedger';
+import { Task, PetState, AppState, PetSpecies, ShopItem, LearningGoal, Plant, PointsLog } from './types';
 import { getPetEncouragement, getPetDailyGreeting, getPetChatResponse } from './services/gemini';
 import { Sparkles, Trophy, Edit2, Calendar, Layout, Users, LogOut, Volume2, VolumeX, ShoppingBag, Target as TargetIcon, Trees, LogIn } from 'lucide-react';
 import { audioService } from './services/audioService';
 import { cn } from './lib/utils';
+
+const addPointsLog = (pointsHistory: PointsLog[] | undefined, type: 'gain' | 'loss', amount: number, reason: string): PointsLog[] => {
+  const history = pointsHistory || [];
+  const now = Date.now();
+  const oneMonthAgo = now - 30 * 24 * 60 * 60 * 1000; // 30 days in milliseconds
+  
+  const newLog: PointsLog = {
+    id: 'log-' + Math.random().toString(36).substr(2, 9),
+    type,
+    amount,
+    reason,
+    timestamp: now
+  };
+  
+  // Filter out logs older than 30 days, then prepend new log
+  return [newLog, ...history].filter(log => log.timestamp >= oneMonthAgo);
+};
 
 const DEFAULT_SKILLS = [
   { id: 's1', name: '专注光环', description: '被动：任务获得的经验值增加 10%', icon: 'Target', minLevel: 3, unlocked: false },
@@ -232,78 +250,88 @@ export default function App() {
     }
   });
 
-  // 新增：从 Supabase 运行同步逻辑
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const hasSyncedRef = useRef(false);
+
+  // 当登录用户改变时（如切换账号），重置同步标记，确保重新加载最新的云端数据
   useEffect(() => {
-    if (!supabase) return;
+    hasSyncedRef.current = false;
+  }, [currentUser]);
+
+  // 从 Supabase 运行和同步逻辑
+  useEffect(() => {
+    if (!supabase || !currentUser) {
+      hasSyncedRef.current = true; // 没登录或未初始化时设为 true，这样本地模式的试玩也可以安全保存到 local storage
+      return;
+    }
 
     const syncWithCloud = async () => {
       try {
-        const res = await supabase.auth.getUser();
-        const user = res && res.data ? res.data.user : null;
-        if (!user) return;
-
         // 自我修复：确保 profiles 中一定存在该用户的记录
         try {
           const { data: profile, error: profileQueryError } = await supabase
             .from('profiles')
             .select('id')
-            .eq('id', user.id)
+            .eq('id', currentUser.id)
             .maybeSingle();
 
           if (!profile && !profileQueryError) {
-            const username = user.user_metadata?.username || user.email?.split('@')[0] || 'User';
+            const username = currentUser.user_metadata?.username || currentUser.email?.split('@')[0] || 'User';
             await supabase
               .from('profiles')
-              .insert([{ id: user.id, username }]);
+              .insert([{ id: currentUser.id, username }]);
           }
         } catch (err) {
           // silent sync fail fallback
         }
 
-        // 3. 稳妥拉取云端存档，防止空数据（例如 {} 默认值）覆盖本地已有数据导致页面崩溃白屏
+        // 3. 稳妥拉取云端存档，使用 maybeSingle 防止没有数据时引发异常崩溃
         const { data, error } = await supabase
           .from('pet_states')
           .select('content')
-          .eq('user_id', user.id)
-          .single();
+          .eq('user_id', currentUser.id)
+          .maybeSingle();
 
         if (data && !error && data.content && typeof data.content === 'object') {
           const dbContent = data.content as any;
           if (dbContent.profiles && typeof dbContent.profiles === 'object' && Object.keys(dbContent.profiles).length > 0) {
             setState(dbContent);
           } else {
-            console.log('[Sync] 云端数据未初始化或 profiles 为空，保留当前本地/初始状态');
+            console.log('[Sync] 云端数据为空，保留并准备上传当前本地状态');
           }
         }
       } catch (err) {
-        // silent sync fail fallback
+        console.error('[Sync] error synchronizing cloud state', err);
+      } finally {
+        // 标记已完成初始化云端同步
+        hasSyncedRef.current = true;
       }
     };
 
     syncWithCloud();
-  }, []);
+  }, [currentUser]);
 
-  // 新增：自动保存到云端
+  // 新增：自动保存到本地和云端
   useEffect(() => {
     localStorage.setItem('smarty_pet_state_v2', JSON.stringify(state));
     
-    if (supabase) {
+    if (supabase && currentUser && hasSyncedRef.current) {
       const saveToCloud = async () => {
         try {
-          const res = await supabase.auth.getUser();
-          const user = res && res.data ? res.data.user : null;
-          if (!user) return;
-          
           await supabase
             .from('pet_states')
-            .upsert({ user_id: user.id, content: state, updated_at: new Error().stack });
+            .upsert({ 
+              user_id: currentUser.id, 
+              content: state, 
+              updated_at: new Date().toISOString() 
+            });
         } catch (err) {
           // silent save fail fallback
         }
       };
       saveToCloud();
     }
-  }, [state]);
+  }, [state, currentUser]);
 
   const [message, setMessage] = useState<string>('');
   const [isThinking, setIsThinking] = useState(false);
@@ -314,7 +342,6 @@ export default function App() {
   const [showPetSelection, setShowPetSelection] = useState(false);
   const [isEvolving, setIsEvolving] = useState(false);
   const [isMuted, setIsMuted] = useState(() => audioService.isMuted());
-  const [currentUser, setCurrentUser] = useState<any>(null);
   const [realFriends, setRealFriends] = useState<any[]>([]);
 
   const fetchRealFriends = async () => {
@@ -432,7 +459,7 @@ export default function App() {
 
   // Daily streak and greeting logic
   useEffect(() => {
-    if (!activeProfile || !activeProfile.pet.isInitialized) return;
+    if (!activeProfile || !activeProfile.pet || !activeProfile.pet.isInitialized) return;
 
     const checkDailyStatus = async () => {
       const now = new Date();
@@ -455,25 +482,30 @@ export default function App() {
         const streakBonusXp = newStreak * 10;
         const streakBonusPoints = newStreak * 5;
         
-        setState(prev => ({
-          ...prev,
-          profiles: {
-            ...prev.profiles,
-            [prev.activeProfileId!]: {
-              ...prev.profiles[prev.activeProfileId!],
-              pet: {
-                ...prev.profiles[prev.activeProfileId!].pet,
-                streak: newStreak,
-                lastCheckIn: Date.now(),
-                xp: prev.profiles[prev.activeProfileId!].pet.xp + streakBonusXp,
-                points: prev.profiles[prev.activeProfileId!].pet.points + streakBonusPoints,
-                happiness: Math.min(100, prev.profiles[prev.activeProfileId!].pet.happiness + 20),
-                energy: Math.min(100, prev.profiles[prev.activeProfileId!].pet.energy + 30),
-                hygiene: Math.max(0, prev.profiles[prev.activeProfileId!].pet.hygiene - 10)
+        setState(prev => {
+          const p = prev.profiles[prev.activeProfileId!];
+          const updatedHistory = addPointsLog(p.pointsHistory, 'gain', streakBonusPoints, `连续打卡 ${newStreak} 天奖励`);
+          return {
+            ...prev,
+            profiles: {
+              ...prev.profiles,
+              [prev.activeProfileId!]: {
+                ...p,
+                pet: {
+                  ...p.pet,
+                  streak: newStreak,
+                  lastCheckIn: Date.now(),
+                  xp: p.pet.xp + streakBonusXp,
+                  points: p.pet.points + streakBonusPoints,
+                  happiness: Math.min(100, p.pet.happiness + 20),
+                  energy: Math.min(100, p.pet.energy + 30),
+                  hygiene: Math.max(0, p.pet.hygiene - 10)
+                },
+                pointsHistory: updatedHistory
               }
             }
-          }
-        }));
+          };
+        });
 
         setIsThinking(true);
         const greeting = await getPetDailyGreeting(activeProfile.pet.name, activeProfile.pet.level);
@@ -506,7 +538,7 @@ export default function App() {
   }, [activeProfile, message]);
 
   useEffect(() => {
-    if (!activeProfile || !activeProfile.pet.isInitialized) return;
+    if (!activeProfile || !activeProfile.pet || !activeProfile.pet.isInitialized) return;
 
     const decayInterval = setInterval(() => {
       setState(prev => {
@@ -540,7 +572,7 @@ export default function App() {
   // 新增：史莱姆阶段蜕变追踪逻辑
   const lastSlimeStageRef = useRef<string | null>(null);
   useEffect(() => {
-    if (!activeProfile || !activeProfile.pet.isInitialized) return;
+    if (!activeProfile || !activeProfile.pet || !activeProfile.pet.isInitialized) return;
     if (activeProfile.pet.species === 'slime') {
       const currentStageName = getSlimeStageName(activeProfile.pet.level);
       if (lastSlimeStageRef.current === null) {
@@ -683,6 +715,11 @@ export default function App() {
 
       if (!changed) return prev;
 
+      let history = p.pointsHistory || [];
+      if (pointsAwarded > 0) {
+        history = addPointsLog(history, 'gain', pointsAwarded, '达成里程碑目标');
+      }
+
       return {
         ...prev,
         profiles: {
@@ -693,7 +730,8 @@ export default function App() {
             pet: {
               ...p.pet,
               points: p.pet.points + pointsAwarded
-            }
+            },
+            pointsHistory: history
           }
         }
       };
@@ -865,12 +903,14 @@ export default function App() {
     
     setState(prev => {
       const p = prev.profiles[prev.activeProfileId!];
+      const updatedHistory = addPointsLog(p.pointsHistory, 'loss', item.price, `兑换商品/奖励：${item.name}`);
       return {
         ...prev,
         profiles: {
           ...prev.profiles,
           [prev.activeProfileId!]: {
             ...p,
+            pointsHistory: updatedHistory,
             pet: {
               ...p.pet,
               points: p.pet.points - item.price,
@@ -959,6 +999,10 @@ export default function App() {
       const newPoints = Math.max(0, p.pet.points - amount);
       const isDeduction = amount > 0;
       
+      const logType = isDeduction ? 'loss' : 'gain';
+      const logAmount = Math.abs(amount);
+      const updatedHistory = addPointsLog(p.pointsHistory, logType, logAmount, reason);
+
       return {
         ...prev,
         profiles: {
@@ -969,7 +1013,8 @@ export default function App() {
               ...p.pet,
               points: newPoints,
               happiness: isDeduction ? Math.max(0, p.pet.happiness - 10) : Math.min(100, p.pet.happiness + 5)
-            }
+            },
+            pointsHistory: updatedHistory
           }
         }
       };
@@ -1054,12 +1099,14 @@ export default function App() {
     setState(prev => {
         const p = prev.profiles[prev.activeProfileId!];
         const garden = p.pet.garden || { unlocked: true, plants: [] };
+        const updatedHistory = addPointsLog(p.pointsHistory, 'loss', 100, `购买并播种了：${newPlant.name}`);
         return {
             ...prev,
             profiles: {
                 ...prev.profiles,
                 [prev.activeProfileId!]: {
                     ...p,
+                    pointsHistory: updatedHistory,
                     pet: {
                         ...p.pet,
                         points: p.pet.points - 100,
@@ -1082,6 +1129,12 @@ export default function App() {
 
     setState(prev => {
         const p = prev.profiles[prev.activeProfileId!];
+        let wateredPlantName = '植物';
+        const targetPlant = p.pet.garden?.plants.find(pl => pl.id === id);
+        if (targetPlant) wateredPlantName = targetPlant.name;
+
+        const updatedHistory = addPointsLog(p.pointsHistory, 'loss', 50, `为花园植物【${wateredPlantName}】浇水`);
+
         const plants = p.pet.garden?.plants.map(pl => {
             if (pl.id === id) {
                 const newGrowth = pl.growth + (pl.sun / 100) * 10 + 2;
@@ -1107,6 +1160,7 @@ export default function App() {
                 ...prev.profiles,
                 [prev.activeProfileId!]: {
                     ...p,
+                    pointsHistory: updatedHistory,
                     pet: {
                         ...p.pet,
                         points: p.pet.points - 50,
@@ -1126,6 +1180,12 @@ export default function App() {
 
     setState(prev => {
         const p = prev.profiles[prev.activeProfileId!];
+        let sunPlantName = '植物';
+        const targetPlant = p.pet.garden?.plants.find(pl => pl.id === id);
+        if (targetPlant) sunPlantName = targetPlant.name;
+
+        const updatedHistory = addPointsLog(p.pointsHistory, 'loss', 50, `为花园植物【${sunPlantName}】进行光照`);
+
         const plants = p.pet.garden?.plants.map(pl => {
             if (pl.id === id) {
                 const newGrowth = pl.growth + (pl.water / 100) * 15 + 3;
@@ -1151,6 +1211,7 @@ export default function App() {
                 ...prev.profiles,
                 [prev.activeProfileId!]: {
                     ...p,
+                    pointsHistory: updatedHistory,
                     pet: {
                         ...p.pet,
                         points: p.pet.points - 50,
@@ -1213,12 +1274,14 @@ export default function App() {
           }
         }
 
+        const updatedHistory = addPointsLog(p.pointsHistory, 'gain', 200, `收获并结算了成熟的【${plant.name}】获得奖励`);
         return {
             ...prev,
             profiles: {
                 ...prev.profiles,
                 [prev.activeProfileId!]: {
                     ...p,
+                    pointsHistory: updatedHistory,
                     pet: {
                         ...p.pet,
                         xp: newXp,
@@ -1363,6 +1426,8 @@ export default function App() {
           unlocked: s.unlocked || newLevel >= s.minLevel
         }));
 
+        const updatedHistory = addPointsLog(p.pointsHistory, 'gain', pointsEarned, `完成任务：${task.title}`);
+
         return {
           ...prev,
           profiles: {
@@ -1370,6 +1435,7 @@ export default function App() {
             [prev.activeProfileId!]: {
               ...p,
               tasks: p.tasks.map(t => t.id === id ? { ...t, completed: true } : t),
+              pointsHistory: updatedHistory,
               pet: {
                 ...p.pet,
                 xp: newXp,
@@ -1626,21 +1692,26 @@ export default function App() {
       if (win) {
         confetti({ particleCount: 50, spread: 60, colors: ['#fbbf24'] });
         setMessage(`太棒了！我们在比拼中获胜啦！获得 15 XP 和 5 学习币！`);
-        setState(prev => ({
-          ...prev,
-          profiles: {
-            ...prev.profiles,
-            [prev.activeProfileId!]: {
-              ...prev.profiles[prev.activeProfileId!],
-              pet: {
-                ...prev.profiles[prev.activeProfileId!].pet,
-                xp: prev.profiles[prev.activeProfileId!].pet.xp + 15,
-                points: prev.profiles[prev.activeProfileId!].pet.points + 5,
-                happiness: Math.min(100, prev.profiles[prev.activeProfileId!].pet.happiness + 10)
+        setState(prev => {
+          const p = prev.profiles[prev.activeProfileId!];
+          const updatedHistory = addPointsLog(p.pointsHistory, 'gain', 5, `在与 ${opponent.petName} 的宠物PK中获胜奖励`);
+          return {
+            ...prev,
+            profiles: {
+              ...prev.profiles,
+              [prev.activeProfileId!]: {
+                ...p,
+                pointsHistory: updatedHistory,
+                pet: {
+                  ...p.pet,
+                  xp: p.pet.xp + 15,
+                  points: p.pet.points + 5,
+                  happiness: Math.min(100, p.pet.happiness + 10)
+                }
               }
             }
-          }
-        }));
+          };
+        });
       } else {
         setMessage(`哎呀，这次比拼输给了 ${opponent.petName}，下次加油！`);
         setState(prev => ({
@@ -1688,13 +1759,15 @@ export default function App() {
   }
 
   if (!state || !state.activeProfileId) {
-    const profileList = Object.entries(state?.profiles || {}).map(([id, p]: [string, any]) => ({
-      id,
-      name: id === Object.keys(state?.profiles || {})[0] ? "大宝贝" : "小宝贝",
-      petName: p.pet?.name || '未命名',
-      petSpecies: p.pet?.species || 'slime',
-      level: p.pet?.level || 1
-    }));
+    const profileList = Object.entries(state?.profiles || {})
+      .filter(([_, p]) => !!p && typeof p === 'object')
+      .map(([id, p]: [string, any]) => ({
+        id,
+        name: id === Object.keys(state?.profiles || {})[0] ? "大宝贝" : "小宝贝",
+        petName: p?.pet?.name || '未命名',
+        petSpecies: p?.pet?.species || 'slime',
+        level: p?.pet?.level || 1
+      }));
 
     return (
       <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center p-4">
@@ -1985,6 +2058,14 @@ export default function App() {
                 </div>
               </div>
               <TaskList tasks={activeProfile.tasks} onAddTask={handleAddTask} onToggleTask={handleToggleTask} onDeleteTask={handleDeleteTask} />
+
+              <PointsLedger
+                pointsHistory={activeProfile.pointsHistory}
+                goals={activeProfile.goals}
+                onDeductPoints={handleDeductPoints}
+                points={activeProfile.pet.points}
+                petName={activeProfile.pet.name}
+              />
               
               <div className="mt-12 p-6 bg-[#E8F5E9] rounded-[2rem] border-4 border-[#C8E6C9] relative overflow-hidden">
                 <div className="absolute -right-4 -bottom-4 opacity-10 rotate-12">
